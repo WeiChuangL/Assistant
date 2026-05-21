@@ -17,7 +17,7 @@ async def run_cli_mode():
 
 async def _run_web():
     import uvicorn
-    config = uvicorn.Config("src.api.server:app", host="0.0.0.0", port=8000, reload=False)
+    config = uvicorn.Config("src.api.server:app", host="0.0.0.0", port=8002, reload=False)
     server = uvicorn.Server(config)
     await server.serve()
 
@@ -32,7 +32,7 @@ def run_web_mode():
 
 if __name__ == "__main__":
     if "--web" in sys.argv:
-        print("Starting web server at http://localhost:8000")
+        print("Starting web server at http://localhost:8001")
         run_web_mode()
     else:
         asyncio.run(run_cli_mode())

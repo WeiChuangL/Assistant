@@ -24,6 +24,13 @@ CREATE TABLE IF NOT EXISTS chunks (
     created_at TIMESTAMP DEFAULT NOW()
 );
 
+CREATE TABLE IF NOT EXISTS sessions (
+    id SERIAL PRIMARY KEY,
+    title TEXT DEFAULT '新会话',
+    created_at TIMESTAMP DEFAULT NOW(),
+    updated_at TIMESTAMP DEFAULT NOW()
+);
+
 CREATE TABLE IF NOT EXISTS memories (
     id SERIAL PRIMARY KEY,
     content TEXT NOT NULL,
@@ -32,6 +39,7 @@ CREATE TABLE IF NOT EXISTS memories (
     memory_type TEXT DEFAULT 'fact',
     importance FLOAT DEFAULT 0.5,
     metadata JSONB DEFAULT '{{}}',
+    session_id INTEGER REFERENCES sessions(id) ON DELETE SET NULL,
     created_at TIMESTAMP DEFAULT NOW(),
     last_accessed TIMESTAMP DEFAULT NOW()
 );
@@ -41,6 +49,19 @@ CREATE TABLE IF NOT EXISTS user_profile (
     key TEXT UNIQUE NOT NULL,
     value TEXT NOT NULL,
     updated_at TIMESTAMP DEFAULT NOW()
+);
+
+CREATE TABLE IF NOT EXISTS mcp_servers (
+    id SERIAL PRIMARY KEY,
+    name TEXT NOT NULL,
+    transport TEXT NOT NULL DEFAULT 'stdio',
+    command TEXT,
+    args TEXT,
+    url TEXT,
+    headers TEXT,
+    env TEXT,
+    enabled BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
 );
 """
 
@@ -63,6 +84,10 @@ async def init_db():
         dim = llm_client.embedding_dim
         sql = CREATE_TABLES_SQL.format(embedding_dim=dim)
         await conn.execute(sql)
+        # Migration: add session_id to existing memories table
+        await conn.execute(
+            "ALTER TABLE memories ADD COLUMN IF NOT EXISTS session_id INTEGER REFERENCES sessions(id) ON DELETE SET NULL"
+        )
         await conn.execute(
             "CREATE INDEX IF NOT EXISTS chunks_embedding_idx "
             "ON chunks USING ivfflat (embedding vector_cosine_ops) WITH (lists = 100)"

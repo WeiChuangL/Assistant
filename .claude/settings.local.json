@@ -13,7 +13,17 @@
       "Bash(.venv/Scripts/python main.py --web)",
       "Bash(curl -s -N -X POST http://localhost:8000/api/chat -H 'Content-Type: application/json' -d '{\"message\":\"你好，介绍一下你自己\"}' --max-time 15)",
       "Bash(kill %1)",
-      "Bash(pkill -f \"main.py --web\")"
+      "Bash(pkill -f \"main.py --web\")",
+      "Bash(.venv/Scripts/python -c \"import httpx; print\\('httpx OK'\\)\")",
+      "Bash(timeout 90 .venv/Scripts/python -X utf8 -c ' *)",
+      "Bash(pkill -f \"main.py\")",
+      "Bash(python -c ' *)",
+      "Bash(uv run python -c ' *)",
+      "Bash(uv run *)",
+      "WebSearch",
+      "WebFetch(domain:deepwiki.com)",
+      "WebFetch(domain:raw.githubusercontent.com)",
+      "Bash(.venv/Scripts/pip install *)"
     ]
   }
 }

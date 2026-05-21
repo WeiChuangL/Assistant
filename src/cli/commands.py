@@ -1,4 +1,3 @@
-import os
 from pathlib import Path
 
 from rich.console import Console
@@ -9,11 +8,17 @@ from src.knowledge.manager import delete_document, list_documents
 from src.knowledge.retrieval import search_chunks
 from src.memory.long_term import search_memories
 from src.memory.profile import delete_profile_value, get_profile, set_profile_value
+from src.session.manager import (
+    create_session,
+    delete_session,
+    list_sessions,
+    rename_session,
+)
 
 console = Console()
 
 
-async def handle_slash_command(cmd: str):
+async def handle_slash_command(cmd: str, cli_session=None):
     """Parse and execute a slash command. Returns True if it was a command, False otherwise."""
     parts = cmd.strip().split(maxsplit=1)
     action = parts[0].lower()
@@ -32,10 +37,15 @@ async def handle_slash_command(cmd: str):
         case "/profile":
             await _profile_subcommand(args)
 
+        case "/session":
+            await _session_subcommand(args, cli_session)
+
         case "/clear":
-            from src.agent.core import agent
-            agent.clear_memory()
-            console.print("[green]对话记忆已清除[/]")
+            if cli_session and cli_session.agent:
+                cli_session.agent.clear_memory()
+                console.print("[green]对话记忆已清除[/]")
+            else:
+                console.print("[yellow]没有活动的会话[/]")
 
         case "/exit" | "/quit":
             console.print("[yellow]再见！[/]")
@@ -61,6 +71,12 @@ def _show_help():
 [bold]/profile show[/]         - 查看用户画像
 [bold]/profile set <键> <值>[/] - 设置用户画像
 [bold]/profile del <键>[/]     - 删除画像条目
+
+[bold]/session new <标题>[/]     - 创建新会话
+[bold]/session list[/]            - 列出所有会话
+[bold]/session switch <ID>[/]     - 切换会话
+[bold]/session rename <ID> <标题>[/] - 重命名会话
+[bold]/session del <ID>[/]        - 删除会话
 
 [bold]/clear[/]                - 清除当前对话记忆
 [bold]/help[/]                 - 显示帮助
@@ -191,3 +207,78 @@ async def _profile_subcommand(args: str):
 
         case _:
             console.print("[red]未知子命令。可用: show | set | del[/]")
+
+
+async def _session_subcommand(args: str, cli_session):
+    """Handle /session commands."""
+    parts = args.split(maxsplit=2)
+    sub = parts[0].lower() if parts else "list"
+    sub_args1 = parts[1] if len(parts) > 1 else ""
+    sub_args2 = parts[2] if len(parts) > 2 else ""
+
+    match sub:
+        case "new":
+            title = sub_args1 or "新会话"
+            session = await create_session(title)
+            console.print(f"[green]已创建会话: [{session.id}] {session.title}[/]")
+            if cli_session:
+                await cli_session.switch(session.id)
+
+        case "list":
+            sessions = await list_sessions()
+            if not sessions:
+                console.print("[yellow]暂无会话[/]")
+                return
+            current_id = cli_session.current_session_id if cli_session else None
+            for s in sessions:
+                marker = " [bold cyan]*[/]" if s.id == current_id else ""
+                console.print(f"  [{s.id}]{marker} {s.title} [dim]({s.updated_at[:19]})[/]")
+
+        case "switch":
+            if not sub_args1:
+                console.print("[red]用法: /session switch <ID>[/]")
+                return
+            try:
+                sid = int(sub_args1.strip())
+            except ValueError:
+                console.print("[red]请输入有效的会话 ID[/]")
+                return
+            if cli_session:
+                await cli_session.switch(sid)
+            else:
+                console.print("[yellow]没有活动的 CLI 会话[/]")
+
+        case "rename":
+            if not sub_args1 or not sub_args2:
+                console.print("[red]用法: /session rename <ID> <新标题>[/]")
+                return
+            try:
+                sid = int(sub_args1.strip())
+            except ValueError:
+                console.print("[red]请输入有效的会话 ID[/]")
+                return
+            await rename_session(sid, sub_args2)
+            console.print(f"[green]会话 {sid} 已重命名为: {sub_args2}[/]")
+
+        case "del":
+            if not sub_args1:
+                console.print("[red]用法: /session del <ID>[/]")
+                return
+            try:
+                sid = int(sub_args1.strip())
+            except ValueError:
+                console.print("[red]请输入有效的会话 ID[/]")
+                return
+            await delete_session(sid)
+            console.print(f"[green]会话 {sid} 已删除[/]")
+            # If we deleted the current session, switch to another
+            if cli_session and cli_session.current_session_id == sid:
+                sessions = await list_sessions()
+                if sessions:
+                    await cli_session.switch(sessions[0].id)
+                else:
+                    new_s = await create_session("默认会话")
+                    await cli_session.switch(new_s.id)
+
+        case _:
+            console.print("[red]未知子命令。可用: new | list | switch | rename | del[/]")

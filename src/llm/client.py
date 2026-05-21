@@ -11,6 +11,16 @@ from src.llm.models import EMBEDDING_DIMENSIONS
 class ChatMessage:
     role: str
     content: str
+    tool_call_id: str | None = None
+    tool_calls: list[dict] | None = None
+
+    def to_api_dict(self) -> dict:
+        d: dict = {"role": self.role, "content": self.content or ""}
+        if self.tool_call_id:
+            d["tool_call_id"] = self.tool_call_id
+        if self.tool_calls:
+            d["tool_calls"] = self.tool_calls
+        return d
 
 
 class LLMClient:
@@ -91,6 +101,39 @@ class LLMClient:
             max_tokens=max_tokens,
         )
         return response.choices[0].message.content or ""
+
+    async def chat_with_tools(
+        self,
+        messages: list[ChatMessage],
+        tools: list[dict],
+        temperature: float = 0.7,
+        max_tokens: int = 4096,
+    ) -> tuple[str | None, list[dict]]:
+        """Non-streaming chat that may trigger tool calls.
+
+        Returns (content, tool_calls). content is None when the model calls a tool.
+        tool_calls is [{"id": str, "name": str, "arguments": str}, ...].
+        """
+        api_messages = [m.to_api_dict() for m in messages]
+
+        response = await self._client.chat.completions.create(
+            model=settings.llm_chat_model,
+            messages=api_messages,
+            tools=tools,
+            tool_choice="auto",
+            temperature=temperature,
+            max_tokens=max_tokens,
+        )
+        msg = response.choices[0].message
+        tool_calls = []
+        if msg.tool_calls:
+            for tc in msg.tool_calls:
+                tool_calls.append({
+                    "id": tc.id,
+                    "name": tc.function.name,
+                    "arguments": tc.function.arguments,
+                })
+        return msg.content, tool_calls
 
 
 llm_client = LLMClient()

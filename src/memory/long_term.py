@@ -26,6 +26,7 @@ async def store_memory(
     memory_type: str = "fact",
     importance: float = 0.5,
     metadata: dict | None = None,
+    session_id: int | None = None,
 ):
     """Store a memory with its embedding."""
     text_to_embed = summary or content
@@ -36,9 +37,9 @@ async def store_memory(
     try:
         async with conn.cursor() as cur:
             await cur.execute(
-                "INSERT INTO memories (content, summary, embedding, memory_type, importance, metadata) "
-                "VALUES (%s, %s, %s::vector, %s, %s, %s)",
-                (content, summary, vec_str, memory_type, importance, json.dumps(metadata or {})),
+                "INSERT INTO memories (content, summary, embedding, memory_type, importance, metadata, session_id) "
+                "VALUES (%s, %s, %s::vector, %s, %s, %s, %s)",
+                (content, summary, vec_str, memory_type, importance, json.dumps(metadata or {}), session_id),
             )
     finally:
         await conn.close()
@@ -49,8 +50,9 @@ async def search_memories(
     top_k: int | None = None,
     threshold: float | None = None,
     memory_type: str | None = None,
+    session_id: int | None = None,
 ) -> list[MemoryEntry]:
-    """Search memories by semantic similarity."""
+    """Search memories by semantic similarity, optionally filtered by session."""
     if top_k is None:
         top_k = settings.agent_top_k_memories
     if threshold is None:
@@ -62,35 +64,33 @@ async def search_memories(
     conn = await get_conn()
     try:
         async with conn.cursor(row_factory=dict_row) as cur:
+            # Build WHERE clauses
+            filters = []
+            params: list = [query_vec]
             if memory_type:
-                await cur.execute(
-                    "SELECT id, content, summary, score, memory_type, importance, created_at "
-                    "FROM ("
-                    "  SELECT id, content, summary, "
-                    "  1 - (embedding <=> %s::vector) AS score, "
-                    "  memory_type, importance, created_at "
-                    "  FROM memories "
-                    "  WHERE memory_type = %s"
-                    ") sub "
-                    "WHERE score > %s "
-                    "ORDER BY score DESC "
-                    "LIMIT %s",
-                    (query_vec, memory_type, threshold, top_k),
-                )
-            else:
-                await cur.execute(
-                    "SELECT id, content, summary, score, memory_type, importance, created_at "
-                    "FROM ("
-                    "  SELECT id, content, summary, "
-                    "  1 - (embedding <=> %s::vector) AS score, "
-                    "  memory_type, importance, created_at "
-                    "  FROM memories"
-                    ") sub "
-                    "WHERE score > %s "
-                    "ORDER BY score DESC "
-                    "LIMIT %s",
-                    (query_vec, threshold, top_k),
-                )
+                filters.append("memory_type = %s")
+                params.append(memory_type)
+            if session_id is not None:
+                filters.append("session_id = %s")
+                params.append(session_id)
+
+            where_clause = f"WHERE {' AND '.join(filters)}" if filters else ""
+            params.extend([threshold, top_k])
+
+            await cur.execute(
+                "SELECT id, content, summary, score, memory_type, importance, created_at "
+                "FROM ("
+                "  SELECT id, content, summary, "
+                "  1 - (embedding <=> %s::vector) AS score, "
+                "  memory_type, importance, created_at "
+                "  FROM memories "
+                f" {where_clause}"
+                ") sub "
+                "WHERE score > %s "
+                "ORDER BY score DESC "
+                "LIMIT %s",
+                params,
+            )
             rows = await cur.fetchall()
 
         if rows:
@@ -117,7 +117,7 @@ async def search_memories(
         await conn.close()
 
 
-async def extract_and_store_memories(conversation_text: str):
+async def extract_and_store_memories(conversation_text: str, session_id: int | None = None):
     """Use LLM to extract important facts/preferences from conversation and store them."""
     from src.llm.client import ChatMessage, llm_client as client
 
@@ -151,6 +151,7 @@ async def extract_and_store_memories(conversation_text: str):
                     summary=item.get("summary"),
                     memory_type=item.get("type", "fact"),
                     importance=item.get("importance", 0.5),
+                    session_id=session_id,
                 )
     except (json.JSONDecodeError, KeyError):
         pass

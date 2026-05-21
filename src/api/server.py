@@ -15,8 +15,26 @@ from src.agent.core import Agent
 from src.knowledge.ingestion import ingest_file
 from src.knowledge.manager import delete_document, list_documents
 from src.knowledge.retrieval import search_chunks
+from src.mcp.client import mcp_client
+from src.mcp.manager import (
+    add_server as mcp_add_server,
+    get_server as mcp_get_server,
+    list_servers as mcp_list_servers,
+    remove_server as mcp_remove_server,
+    toggle_server as mcp_toggle_server,
+    update_server as mcp_update_server,
+)
+from src.mcp.market import find_market_server, get_market_servers, get_market_servers_with_status
 from src.memory.long_term import search_memories
 from src.memory.profile import delete_profile_value, get_profile, set_profile_value
+from src.session.manager import (
+    create_session,
+    delete_session,
+    list_sessions,
+    rename_session,
+)
+from src.skill.market import get_market_skills, install_from_market
+from src.skill.registry import skill_registry
 from src.vector_store.db import init_db
 
 app = FastAPI(title="智能助手")
@@ -26,6 +44,7 @@ HTML_PATH = Path(__file__).parent / "index.html"
 
 class ChatRequest(BaseModel):
     message: str
+    session_id: int | None = None
 
 
 class ProfileRequest(BaseModel):
@@ -36,6 +55,12 @@ class ProfileRequest(BaseModel):
 @app.on_event("startup")
 async def startup():
     await init_db()
+    # Connect all enabled MCP servers
+    try:
+        servers = await mcp_list_servers()
+        await mcp_client.connect_all_enabled(servers)
+    except Exception:
+        pass  # MCP connection failures are non-fatal
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -45,7 +70,7 @@ async def root():
 
 @app.post("/api/chat")
 async def chat(req: ChatRequest):
-    agent = Agent()
+    agent = Agent(session_id=req.session_id)
 
     async def sse_generator():
         try:
@@ -115,3 +140,175 @@ async def profile_set(req: ProfileRequest):
 async def profile_del(key: str):
     await delete_profile_value(key)
     return {"ok": True}
+
+
+# ── Session endpoints ──
+
+@app.post("/api/session/new")
+async def session_new(title: str = "新会话"):
+    session = await create_session(title)
+    return {"id": session.id, "title": session.title, "created_at": session.created_at, "updated_at": session.updated_at}
+
+
+@app.get("/api/session/list")
+async def session_list():
+    sessions = await list_sessions()
+    return [{"id": s.id, "title": s.title, "created_at": s.created_at, "updated_at": s.updated_at} for s in sessions]
+
+
+@app.delete("/api/session/{session_id}")
+async def session_del(session_id: int):
+    await delete_session(session_id)
+    return {"ok": True}
+
+
+@app.put("/api/session/{session_id}/rename")
+async def session_rename(session_id: int, title: str = ""):
+    if not title:
+        return {"ok": False, "error": "title is required"}
+    await rename_session(session_id, title)
+    return {"ok": True}
+
+
+# ── Skill endpoints ──
+
+@app.get("/api/skill/list")
+async def skill_list():
+    return skill_registry.list_all()
+
+
+@app.post("/api/skill/{name}/enable")
+async def skill_enable(name: str):
+    skill_registry.enable(name)
+    return {"ok": True}
+
+
+@app.post("/api/skill/{name}/disable")
+async def skill_disable(name: str):
+    skill_registry.disable(name)
+    return {"ok": True}
+
+
+@app.delete("/api/skill/{name}")
+async def skill_remove(name: str):
+    skill_registry.remove(name)
+    return {"ok": True}
+
+
+@app.get("/api/skill/market")
+async def skill_market():
+    return get_market_skills()
+
+
+@app.post("/api/skill/market/{name}/install")
+async def skill_market_install(name: str):
+    ok = install_from_market(name)
+    return {"ok": ok}
+
+
+# ── MCP endpoints ──
+
+@app.get("/api/mcp/servers")
+async def mcp_server_list():
+    servers = await mcp_list_servers()
+    for s in servers:
+        s["status"] = mcp_client.get_connection_status(s["id"])
+        s["tool_count"] = mcp_client.get_tool_count(s["id"])
+    return servers
+
+
+@app.post("/api/mcp/servers")
+async def mcp_server_add(req: dict):
+    sid = await mcp_add_server(
+        name=req.get("name", ""),
+        transport=req.get("transport", "stdio"),
+        command=req.get("command"),
+        args=req.get("args", []),
+        url=req.get("url"),
+        headers=req.get("headers", {}),
+        env=req.get("env", {}),
+    )
+    srv = await mcp_get_server(sid)
+    if srv:
+        tools = await mcp_client.connect(sid, srv)
+        return {"ok": True, "id": sid, "tools": len(tools)}
+    return {"ok": False, "error": "failed to create server"}
+
+
+@app.delete("/api/mcp/servers/{server_id}")
+async def mcp_server_del(server_id: int):
+    await mcp_client.disconnect(server_id)
+    await mcp_remove_server(server_id)
+    return {"ok": True}
+
+
+@app.put("/api/mcp/servers/{server_id}")
+async def mcp_server_update(server_id: int, req: dict):
+    await mcp_update_server(server_id, **req)
+    return {"ok": True}
+
+
+@app.post("/api/mcp/servers/{server_id}/toggle")
+async def mcp_server_toggle(server_id: int):
+    srv = await mcp_get_server(server_id)
+    if not srv:
+        return {"ok": False, "error": "not found"}
+    new_state = not srv["enabled"]
+    await mcp_toggle_server(server_id, new_state)
+    if new_state:
+        await mcp_client.connect(server_id, srv)
+    else:
+        await mcp_client.disconnect(server_id)
+    return {"ok": True, "enabled": new_state}
+
+
+@app.post("/api/mcp/servers/{server_id}/reconnect")
+async def mcp_server_reconnect(server_id: int):
+    await mcp_client.disconnect(server_id)
+    srv = await mcp_get_server(server_id)
+    if not srv:
+        return {"ok": False, "error": "server not found"}
+    tools = await mcp_client.connect(server_id, srv)
+    return {"ok": True, "tools": tools, "count": len(tools)}
+
+
+@app.get("/api/mcp/servers/{server_id}/tools")
+async def mcp_server_tools(server_id: int):
+    return mcp_client.get_server_tools(server_id)
+
+
+@app.get("/api/mcp/market")
+async def mcp_market():
+    return await get_market_servers_with_status()
+
+
+@app.post("/api/mcp/market/{name}/add")
+async def mcp_market_add(name: str, config: dict | None = None):
+    item = find_market_server(name)
+    if not item:
+        return {"ok": False, "error": "market item not found"}
+
+    # Merge user-provided config overrides (API keys etc.)
+    env = item.get("env", {})
+    if config:
+        if "env" in config:
+            env.update(config["env"])
+        if "args" in config:
+            item["args"] = config["args"]
+        if "headers" in config:
+            item["headers"] = {**item.get("headers", {}), **config["headers"]}
+
+    sid = await mcp_add_server(
+        name=item["name"],
+        transport=item.get("transport", "stdio"),
+        command=item.get("command"),
+        args=item.get("args", []),
+        url=item.get("url"),
+        headers=item.get("headers", {}),
+        env=env,
+    )
+    srv = await mcp_get_server(sid)
+    if srv:
+        tools = await mcp_client.connect(sid, srv)
+        return {"ok": True, "id": sid, "tools": len(tools)}
+    return {"ok": False, "error": "failed to add server"}

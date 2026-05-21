@@ -1,0 +1,19 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(uv sync *)",
+      "Bash(uv pip *)",
+      "Bash(uv add *)",
+      "Bash(.venv/Scripts/python -m pip install pgvector)",
+      "Bash(.venv/Scripts/python -c \"import psycopg; print\\('psycopg OK'\\)\")",
+      "Bash(.venv/Scripts/python -c ' *)",
+      "Bash(set PYTHONIOENCODING=utf-8)",
+      "Bash(.venv/Scripts/python -X utf8 -c ' *)",
+      "Bash(timeout 8 .venv/Scripts/python main.py --web)",
+      "Bash(.venv/Scripts/python main.py --web)",
+      "Bash(curl -s -N -X POST http://localhost:8000/api/chat -H 'Content-Type: application/json' -d '{\"message\":\"你好，介绍一下你自己\"}' --max-time 15)",
+      "Bash(kill %1)",
+      "Bash(pkill -f \"main.py --web\")"
+    ]
+  }
+}

@@ -1,0 +1,72 @@
+[
+  {
+    "name": "code-review",
+    "display_name": "代码审查",
+    "description": "对代码进行审查，检查安全漏洞、性能问题和代码规范",
+    "icon": "🔍",
+    "category": "开发",
+    "author": "Assistant Team",
+    "downloads": 128,
+    "version": "1.0.0",
+    "prompt_append": "## 代码审查模式\n你正在以代码审查专家模式工作。审查代码时请关注: 安全漏洞、性能、可读性、最佳实践。用中文输出审查意见。",
+    "tools": [],
+    "auto_trigger": true,
+    "trigger_keywords": ["/code-review", "/review", "审查代码", "代码审查", "review code"]
+  },
+  {
+    "name": "translator",
+    "display_name": "翻译助手",
+    "description": "多语言翻译专家，支持中英日韩法德等语言互译",
+    "icon": "🌐",
+    "category": "语言",
+    "author": "Assistant Team",
+    "downloads": 89,
+    "version": "1.0.0",
+    "prompt_append": "## 翻译模式\n你是专业翻译。注意准确性、流畅性、术语标准、语气一致。翻译结果标注源语言和目标语言。",
+    "tools": [],
+    "auto_trigger": true,
+    "trigger_keywords": ["/translator", "/translate", "翻译", "翻译成", "translate"]
+  },
+  {
+    "name": "data-analyst",
+    "display_name": "数据分析",
+    "description": "分析数据并提供洞察，支持统计分析、趋势预测、可视化建议",
+    "icon": "📊",
+    "category": "分析",
+    "author": "Assistant Team",
+    "downloads": 56,
+    "version": "1.0.0",
+    "prompt_append": "## 数据分析模式\n你是数据分析专家。分析数据时: 先理解数据结构 → 识别关键指标 → 发现趋势和异常 → 给出可行的建议。",
+    "tools": [],
+    "auto_trigger": true,
+    "trigger_keywords": ["/data-analyst", "/analyst", "分析数据", "数据分析"]
+  },
+  {
+    "name": "writing-assistant",
+    "display_name": "写作助手",
+    "description": "辅助写作，润色文章、优化表达、修正语法错误",
+    "icon": "✍️",
+    "category": "写作",
+    "author": "Assistant Team",
+    "downloads": 203,
+    "version": "1.0.0",
+    "prompt_append": "## 写作助手模式\n你是写作导师。帮助优化: 结构逻辑、语言表达、语法修正、风格统一。保持作者原意，只做优化不做重写。",
+    "tools": [],
+    "auto_trigger": true,
+    "trigger_keywords": ["/writing", "/write", "写作", "润色", "改写"]
+  },
+  {
+    "name": "teacher",
+    "display_name": "教学导师",
+    "description": "以教学方式解释复杂概念，适合学习新技术和新知识",
+    "icon": "📚",
+    "category": "教育",
+    "author": "Assistant Team",
+    "downloads": 145,
+    "version": "1.0.0",
+    "prompt_append": "## 教学模式\n你是耐心的导师。解释概念时: 用简单的类比引入 → 逐步深入 → 举例说明 → 总结要点。鼓励提问并检查理解。",
+    "tools": [],
+    "auto_trigger": true,
+    "trigger_keywords": ["/teacher", "/teach", "/explain", "教我", "解释一下", "什么是"]
+  }
+]

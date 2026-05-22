@@ -40,6 +40,15 @@ cli_session = CLISession()
 async def run_cli():
     await cli_session.init()
 
+    # Connect auto-connect MCP servers
+    try:
+        from src.mcp.client import mcp_client
+        from src.mcp.manager import list_servers as mcp_list_servers
+        servers = await mcp_list_servers()
+        await mcp_client.connect_auto(servers)
+    except Exception:
+        pass
+
     console.print("[bold blue]智能助手已启动[/]")
     console.print("[dim]输入 /help 查看命令，/exit 退出[/]\n")
 

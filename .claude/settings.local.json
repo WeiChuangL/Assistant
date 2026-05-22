@@ -23,7 +23,12 @@
       "WebSearch",
       "WebFetch(domain:deepwiki.com)",
       "WebFetch(domain:raw.githubusercontent.com)",
-      "Bash(.venv/Scripts/pip install *)"
+      "Bash(.venv/Scripts/pip install *)",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('src/market_sources.py', doraise=True\\); print\\('OK: src/market_sources.py'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('src/skill/market.py', doraise=True\\); print\\('OK: src/skill/market.py'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('src/mcp/market.py', doraise=True\\); print\\('OK: src/mcp/market.py'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('src/api/server.py', doraise=True\\); print\\('OK: src/api/server.py'\\)\")",
+      "Bash(python -c \"import py_compile; py_compile.compile\\('src/mcp/client.py', doraise=True\\); print\\('OK'\\)\")"
     ]
   }
 }

@@ -1,0 +1,61 @@
+[
+  {
+    "name": "filesystem",
+    "display_name": "文件系统",
+    "description": "安全地访问本地文件系统，读取和编辑文件。需要指定允许访问的目录路径",
+    "icon": "📁",
+    "category": "工具",
+    "transport": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-filesystem", "/path/to/allowed"],
+    "env": {},
+    "configHint": "请将 /path/to/allowed 替换为允许访问的实际目录路径"
+  },
+  {
+    "name": "github",
+    "display_name": "GitHub",
+    "description": "GitHub API 集成，管理仓库、Issues、PR、搜索代码等",
+    "icon": "🐙",
+    "category": "开发",
+    "transport": "http",
+    "url": "https://api.github.com/mcp",
+    "headers": {"Authorization": "Bearer YOUR_GITHUB_TOKEN"},
+    "configHint": "请将 YOUR_GITHUB_TOKEN 替换为你的 GitHub Personal Access Token"
+  },
+  {
+    "name": "brave-search",
+    "display_name": "Brave 搜索",
+    "description": "通过 Brave Search API 进行网页搜索，获取最新信息",
+    "icon": "🔎",
+    "category": "搜索",
+    "transport": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-brave-search"],
+    "env": {"BRAVE_API_KEY": "YOUR_BRAVE_API_KEY"},
+    "configHint": "请将 BRAVE_API_KEY 替换为你的 Brave Search API Key"
+  },
+  {
+    "name": "sqlite",
+    "display_name": "SQLite 数据库",
+    "description": "连接 SQLite 数据库，执行查询和管理数据",
+    "icon": "🗄️",
+    "category": "数据库",
+    "transport": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-sqlite", "/path/to/database.db"],
+    "env": {},
+    "configHint": "请将 /path/to/database.db 替换为 SQLite 数据库文件路径"
+  },
+  {
+    "name": "postgres",
+    "display_name": "PostgreSQL",
+    "description": "连接 PostgreSQL 数据库，执行 SQL 查询",
+    "icon": "🐘",
+    "category": "数据库",
+    "transport": "stdio",
+    "command": "npx",
+    "args": ["-y", "@modelcontextprotocol/server-postgres"],
+    "env": {"DATABASE_URL": "postgresql://user:password@host:5432/dbname"},
+    "configHint": "请将 DATABASE_URL 替换为你的 PostgreSQL 连接字符串"
+  }
+]

@@ -1,0 +1,10 @@
+{
+  "code-review": {
+    "enabled": true,
+    "auto_trigger": true
+  },
+  "translator": {
+    "enabled": true,
+    "auto_trigger": true
+  }
+}

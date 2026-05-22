@@ -21,6 +21,7 @@ from src.mcp.manager import (
     get_server as mcp_get_server,
     list_servers as mcp_list_servers,
     remove_server as mcp_remove_server,
+    set_auto_connect as mcp_set_auto_connect,
     toggle_server as mcp_toggle_server,
     update_server as mcp_update_server,
 )
@@ -32,6 +33,13 @@ from src.session.manager import (
     delete_session,
     list_sessions,
     rename_session,
+)
+from src.market_sources import (
+    add_source as market_add_source,
+    fetch_third_party_market,
+    list_sources as market_list_sources,
+    remove_source as market_remove_source,
+    toggle_source as market_toggle_source,
 )
 from src.skill.market import get_market_skills, install_from_market
 from src.skill.registry import skill_registry
@@ -45,6 +53,7 @@ HTML_PATH = Path(__file__).parent / "index.html"
 class ChatRequest(BaseModel):
     message: str
     session_id: int | None = None
+    triggered_skills: list[str] | None = None
 
 
 class ProfileRequest(BaseModel):
@@ -55,10 +64,10 @@ class ProfileRequest(BaseModel):
 @app.on_event("startup")
 async def startup():
     await init_db()
-    # Connect all enabled MCP servers
+    # Connect auto-connect MCP servers
     try:
         servers = await mcp_list_servers()
-        await mcp_client.connect_all_enabled(servers)
+        await mcp_client.connect_auto(servers)
     except Exception:
         pass  # MCP connection failures are non-fatal
 
@@ -74,7 +83,9 @@ async def chat(req: ChatRequest):
 
     async def sse_generator():
         try:
-            async for token in agent.chat_stream(req.message):
+            async for token in agent.chat_stream(
+                req.message, triggered_skills=req.triggered_skills
+            ):
                 data = json.dumps({"token": token})
                 yield f"data: {data}\n\n"
             yield "data: [DONE]\n\n"
@@ -197,13 +208,29 @@ async def skill_remove(name: str):
 
 @app.get("/api/skill/market")
 async def skill_market():
-    return get_market_skills()
+    return await get_market_skills()
 
 
 @app.post("/api/skill/market/{name}/install")
 async def skill_market_install(name: str):
     ok = install_from_market(name)
     return {"ok": ok}
+
+
+@app.put("/api/skill/{name}/auto-trigger")
+async def skill_auto_trigger(name: str, body: dict):
+    auto_trigger = body.get("auto_trigger", True)
+    skill_registry.toggle_auto_trigger(name, auto_trigger)
+    return {"ok": True, "auto_trigger": auto_trigger}
+
+
+@app.post("/api/skill/{name}/trigger")
+async def skill_trigger(name: str):
+    """Return skill info so frontend can append it to next message's triggered_skills."""
+    skill = skill_registry.get(name)
+    if not skill:
+        return {"ok": False, "error": "skill not found"}
+    return {"ok": True, "name": name, "keywords": skill.trigger_keywords}
 
 
 # ── MCP endpoints ──
@@ -272,6 +299,13 @@ async def mcp_server_reconnect(server_id: int):
     return {"ok": True, "tools": tools, "count": len(tools)}
 
 
+@app.put("/api/mcp/servers/{server_id}/auto-connect")
+async def mcp_server_auto_connect(server_id: int, body: dict):
+    auto_connect = body.get("auto_connect", True)
+    await mcp_set_auto_connect(server_id, auto_connect)
+    return {"ok": True, "auto_connect": auto_connect}
+
+
 @app.get("/api/mcp/servers/{server_id}/tools")
 async def mcp_server_tools(server_id: int):
     return mcp_client.get_server_tools(server_id)
@@ -312,3 +346,61 @@ async def mcp_market_add(name: str, config: dict | None = None):
         tools = await mcp_client.connect(sid, srv)
         return {"ok": True, "id": sid, "tools": len(tools)}
     return {"ok": False, "error": "failed to add server"}
+
+
+# ── Market Source endpoints ──
+
+@app.get("/api/skill/market/sources")
+async def skill_market_sources():
+    return await market_list_sources("skill")
+
+
+@app.post("/api/skill/market/sources")
+async def skill_market_source_add(body: dict):
+    name = body.get("name", "").strip()
+    url = body.get("url", "").strip()
+    if not name or not url:
+        return {"ok": False, "error": "name and url are required"}
+    sid = await market_add_source("skill", name, url)
+    return {"ok": True, "id": sid}
+
+
+@app.delete("/api/skill/market/sources/{source_id}")
+async def skill_market_source_del(source_id: int):
+    await market_remove_source(source_id)
+    return {"ok": True}
+
+
+@app.put("/api/skill/market/sources/{source_id}")
+async def skill_market_source_toggle(source_id: int, body: dict):
+    enabled = body.get("enabled", True)
+    await market_toggle_source(source_id, enabled)
+    return {"ok": True, "enabled": enabled}
+
+
+@app.get("/api/mcp/market/sources")
+async def mcp_market_sources():
+    return await market_list_sources("mcp")
+
+
+@app.post("/api/mcp/market/sources")
+async def mcp_market_source_add(body: dict):
+    name = body.get("name", "").strip()
+    url = body.get("url", "").strip()
+    if not name or not url:
+        return {"ok": False, "error": "name and url are required"}
+    sid = await market_add_source("mcp", name, url)
+    return {"ok": True, "id": sid}
+
+
+@app.delete("/api/mcp/market/sources/{source_id}")
+async def mcp_market_source_del(source_id: int):
+    await market_remove_source(source_id)
+    return {"ok": True}
+
+
+@app.put("/api/mcp/market/sources/{source_id}")
+async def mcp_market_source_toggle(source_id: int, body: dict):
+    enabled = body.get("enabled", True)
+    await market_toggle_source(source_id, enabled)
+    return {"ok": True, "enabled": enabled}

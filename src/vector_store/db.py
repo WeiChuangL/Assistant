@@ -63,6 +63,15 @@ CREATE TABLE IF NOT EXISTS mcp_servers (
     enabled BOOLEAN DEFAULT TRUE,
     created_at TIMESTAMP DEFAULT NOW()
 );
+
+CREATE TABLE IF NOT EXISTS market_sources (
+    id SERIAL PRIMARY KEY,
+    market_type TEXT NOT NULL,
+    name TEXT NOT NULL,
+    url TEXT NOT NULL,
+    enabled BOOLEAN DEFAULT TRUE,
+    created_at TIMESTAMP DEFAULT NOW()
+);
 """
 
 
@@ -87,6 +96,16 @@ async def init_db():
         # Migration: add session_id to existing memories table
         await conn.execute(
             "ALTER TABLE memories ADD COLUMN IF NOT EXISTS session_id INTEGER REFERENCES sessions(id) ON DELETE SET NULL"
+        )
+        # Migration: add auto_connect to mcp_servers
+        await conn.execute(
+            "ALTER TABLE mcp_servers ADD COLUMN IF NOT EXISTS auto_connect BOOLEAN DEFAULT TRUE"
+        )
+        # Migration: ensure market_sources table exists
+        await conn.execute(
+            "CREATE TABLE IF NOT EXISTS market_sources ("
+            "id SERIAL PRIMARY KEY, market_type TEXT NOT NULL, name TEXT NOT NULL, "
+            "url TEXT NOT NULL, enabled BOOLEAN DEFAULT TRUE, created_at TIMESTAMP DEFAULT NOW())"
         )
         await conn.execute(
             "CREATE INDEX IF NOT EXISTS chunks_embedding_idx "

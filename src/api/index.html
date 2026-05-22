@@ -25,465 +25,344 @@
 *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
 html, body { height: 100%; }
 body {
-  font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
-  background: var(--bg);
-  color: var(--text);
-  display: flex;
-  overflow: hidden;
+  display: flex; overflow: hidden; font-family: 'Segoe UI', 'PingFang SC', 'Microsoft YaHei', sans-serif;
+  background: var(--bg); color: var(--text);
 }
-/* Animated bg */
 body::before {
-  content: '';
-  position: fixed;
-  inset: 0;
+  content: ''; position: fixed; inset: 0; z-index: 0; pointer-events: none;
   background:
-    radial-gradient(ellipse at 20% 50%, rgba(124,92,252,0.12) 0%, transparent 50%),
-    radial-gradient(ellipse at 80% 20%, rgba(91,141,239,0.10) 0%, transparent 50%),
-    radial-gradient(ellipse at 50% 80%, rgba(124,92,252,0.06) 0%, transparent 50%);
-  pointer-events: none;
-  z-index: 0;
+    radial-gradient(ellipse at 20% 30%, rgba(124,92,252,0.12) 0%, transparent 60%),
+    radial-gradient(ellipse at 70% 60%, rgba(91,141,239,0.08) 0%, transparent 50%),
+    radial-gradient(ellipse at 40% 80%, rgba(124,92,252,0.06) 0%, transparent 40%);
 }
 
-/* Sidebar */
+/* ── Sidebar ── */
 .sidebar {
-  width: 340px;
-  min-width: 340px;
-  height: 100vh;
-  background: var(--glass);
-  border-right: 1px solid var(--glass-border);
-  display: flex;
-  flex-direction: column;
-  z-index: 1;
-  backdrop-filter: blur(20px);
+  width: 280px; min-width: 280px; display: flex; flex-direction: column;
+  background: var(--glass); backdrop-filter: blur(18px);
+  border-right: 1px solid var(--glass-border); z-index: 1;
 }
 .sidebar-header {
-  padding: 24px 20px 16px;
-  border-bottom: 1px solid var(--glass-border);
+  padding: 18px 20px; border-bottom: 1px solid var(--glass-border);
 }
 .sidebar-header h1 {
-  font-size: 22px;
-  font-weight: 700;
-  background: linear-gradient(135deg, #c4b5fd, #93c5fd);
-  -webkit-background-clip: text;
-  -webkit-text-fill-color: transparent;
+  font-size: 20px; font-weight: 700;
+  background: linear-gradient(135deg, #7c5cfc, #5b8def);
+  -webkit-background-clip: text; -webkit-text-fill-color: transparent;
   background-clip: text;
 }
-.sidebar-header p { font-size: 12px; color: var(--text-dim); margin-top: 4px; }
-.sidebar-tabs {
-  display: flex;
-  border-bottom: 1px solid var(--glass-border);
-}
-.sidebar-tabs button {
-  flex: 1;
-  padding: 12px;
-  background: none;
-  border: none;
-  color: var(--text-dim);
-  cursor: pointer;
-  font-size: 13px;
-  font-weight: 500;
-  transition: var(--transition);
-  border-bottom: 2px solid transparent;
-}
-.sidebar-tabs button.active {
-  color: var(--accent);
-  border-bottom-color: var(--accent);
-}
-.sidebar-content { flex: 1; overflow-y: auto; padding: 16px; }
+.sidebar-header p { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
+
+.sidebar-content { flex: 1; overflow-y: auto; padding: 12px; }
 .sidebar-content::-webkit-scrollbar { width: 4px; }
 .sidebar-content::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
 
-/* Tab panels */
-.tab-panel { display: none; }
-.tab-panel.active { display: block; }
+.session-list { display: flex; flex-direction: column; gap: 4px; }
+.session-item {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 10px 12px; background: var(--surface); border-radius: var(--radius-sm);
+  cursor: pointer; border: 1px solid transparent;
+}
+.session-item:hover { border-color: var(--glass-border); }
+.session-item.active { background: rgba(124,92,252,0.15); border-color: var(--accent); }
+.session-info { flex: 1; min-width: 0; }
+.session-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.session-meta { font-size: 11px; color: var(--text-dim); }
+.session-actions { display: flex; gap: 2px; }
+.session-actions button { background: none; border: none; color: var(--text-dim); cursor: pointer; font-size: 13px; padding: 2px 4px; opacity: 0.4; }
+.session-actions button:hover { opacity: 1; }
+.session-actions button:nth-child(1):hover { color: var(--accent); }
+.session-actions button:nth-child(2):hover { color: var(--danger); }
 
-/* Upload zone */
+.new-btn {
+  width: 100%; padding: 10px; margin-top: 10px; border: 1px dashed var(--glass-border);
+  border-radius: var(--radius-sm); background: transparent;
+  color: var(--text-dim); font-size: 13px; cursor: pointer;
+}
+.new-btn:hover { border-color: var(--accent); color: var(--accent); }
+
+/* ── Main chat area ── */
+.main { flex: 1; display: flex; flex-direction: column; height: 100vh; z-index: 1; }
+.chat-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 14px 24px; backdrop-filter: blur(12px); border-bottom: 1px solid var(--glass-border);
+  gap: 12px;
+}
+.chat-header h2 { font-size: 16px; font-weight: 600; flex: 1; }
+.header-btn {
+  padding: 6px 14px; font-size: 12px; border-radius: 14px;
+  background: var(--surface); border: 1px solid var(--glass-border);
+  color: var(--text-dim); cursor: pointer; white-space: nowrap;
+}
+.header-btn:hover { background: rgba(255,255,255,0.08); color: var(--text); }
+.header-btn.settings-btn { border-color: var(--accent); color: var(--accent); }
+.header-btn.settings-btn:hover { background: rgba(124,92,252,0.15); }
+
+.messages {
+  flex: 1; overflow-y: auto; padding: 24px; display: flex; flex-direction: column; gap: 20px;
+}
+.messages::-webkit-scrollbar { width: 4px; }
+.messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+.message { display: flex; gap: 12px; animation: msgIn .3s ease; }
+@keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: none; } }
+.message.user { flex-direction: row-reverse; }
+.message .avatar { width: 34px; height: 34px; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 16px; flex-shrink: 0; }
+.message.assistant .avatar { background: rgba(124,92,252,0.15); }
+.message.user .avatar { background: rgba(91,141,239,0.15); }
+.message .bubble { max-width: 72%; font-size: 14px; line-height: 1.65; word-break: break-word; padding: 12px 16px; border-radius: var(--radius); }
+.message.user .bubble { background: var(--user-bubble); color: #fff; border-bottom-right-radius: 4px; }
+.message.assistant .bubble { background: var(--assistant-bubble); border: 1px solid var(--glass-border); border-bottom-left-radius: 4px; }
+.message.assistant .bubble p { margin-bottom: 8px; }
+.message.assistant .bubble p:last-child { margin-bottom: 0; }
+.message.assistant .bubble code { background: rgba(0,0,0,0.4); padding: 2px 6px; border-radius: 4px; font-family: 'Consolas', 'Courier New', monospace; font-size: 13px; }
+.message.assistant .bubble pre { background: rgba(0,0,0,0.5); padding: 12px; border-radius: 8px; overflow-x: auto; }
+.message.assistant .bubble pre code { background: none; padding: 0; }
+.message.assistant .bubble .source { display: inline-block; padding: 2px 8px; font-size: 11px; border-radius: 10px; background: rgba(124,92,252,0.15); color: var(--accent); }
+.typing .bubble::after { content: '▊'; animation: blink 1s infinite; }
+@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
+
+.empty-chat { flex: 1; display: flex; align-items: center; justify-content: center; flex-direction: column; color: var(--text-dim); }
+.empty-chat .icon { font-size: 48px; opacity: 0.3; margin-bottom: 12px; }
+.empty-chat p { font-size: 15px; }
+
+.trigger-bar { padding: 6px 20px; display: flex; flex-wrap: wrap; gap: 4px; }
+.trigger-bar:empty { display: none; }
+.trigger-badge {
+  display: inline-flex; align-items: center; gap: 4px;
+  padding: 3px 10px; font-size: 11px; border-radius: 12px;
+  background: rgba(124,92,252,0.2); color: var(--accent); cursor: pointer;
+}
+.trigger-badge .remove { font-size: 14px; margin-left: 2px; opacity: 0.6; }
+.trigger-badge .remove:hover { opacity: 1; }
+
+.input-area { padding: 20px 24px; border-top: 1px solid var(--glass-border); background: var(--glass); backdrop-filter: blur(16px); }
+.input-wrap { display: flex; gap: 10px; align-items: flex-end; }
+.input-wrap textarea {
+  flex: 1; resize: none; border-radius: 24px; padding: 10px 18px; font-size: 14px;
+  background: var(--surface); border: 1px solid var(--glass-border); color: var(--text);
+  outline: none; line-height: 1.5; min-height: 44px; max-height: 120px;
+  font-family: inherit; transition: var(--transition);
+}
+.input-wrap textarea:focus { border-color: var(--accent); box-shadow: 0 0 0 2px var(--accent-glow); }
+.input-wrap textarea::placeholder { color: var(--text-dim); }
+.input-wrap button {
+  width: 44px; height: 44px; border-radius: 50%; border: none; background: var(--accent);
+  color: #fff; font-size: 18px; cursor: pointer; flex-shrink: 0; transition: var(--transition);
+}
+.input-wrap button:hover { background: #6a4eec; transform: scale(1.05); }
+.input-wrap button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+
+/* ── Settings Overlay ── */
+.settings-overlay {
+  position: fixed; inset: 0; z-index: 99; pointer-events: none;
+}
+.settings-overlay.open { pointer-events: auto; }
+.settings-backdrop {
+  position: absolute; inset: 0; background: rgba(0,0,0,0.5); opacity: 0; transition: opacity .3s;
+}
+.settings-overlay.open .settings-backdrop { opacity: 1; }
+.settings-panel {
+  position: absolute; right: 0; top: 0; height: 100vh; width: 380px; max-width: 95vw;
+  background: #0f0f24; border-left: 1px solid var(--glass-border);
+  display: flex; flex-direction: column;
+  transform: translateX(100%); transition: transform .3s ease;
+  box-shadow: -8px 0 30px rgba(0,0,0,0.4);
+}
+.settings-overlay.open .settings-panel { transform: translateX(0); }
+
+.settings-panel-header {
+  display: flex; align-items: center; justify-content: space-between;
+  padding: 18px 20px; border-bottom: 1px solid var(--glass-border);
+}
+.settings-panel-header h2 { font-size: 18px; }
+.settings-panel-header button {
+  background: none; border: none; color: var(--text-dim); font-size: 20px; cursor: pointer;
+  padding: 4px 8px; border-radius: 6px;
+}
+.settings-panel-header button:hover { color: var(--text); background: var(--surface); }
+
+.settings-subnav {
+  display: flex; gap: 6px; padding: 12px 20px; border-bottom: 1px solid var(--glass-border);
+}
+.settings-subnav button {
+  padding: 6px 16px; font-size: 12px; border-radius: 18px; border: 1px solid var(--glass-border);
+  background: var(--surface); color: var(--text-dim); cursor: pointer;
+}
+.settings-subnav button.active { background: var(--accent); color: #fff; border-color: var(--accent); }
+
+.settings-body { flex: 1; overflow-y: auto; padding: 14px 20px; }
+.settings-body::-webkit-scrollbar { width: 4px; }
+.settings-body::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
+
+.settings-section { display: none; }
+.settings-section.active { display: block; }
+
+/* ── Shared components ── */
+.section-header {
+  font-size: 11px; color: var(--text-dim); margin-bottom: 8px;
+  text-transform: uppercase; letter-spacing: 1px;
+}
+.item-card {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 6px;
+  background: var(--surface); border-radius: var(--radius-sm);
+  border: 1px solid transparent; transition: var(--transition);
+}
+.item-card:hover { border-color: var(--glass-border); }
+.item-icon { font-size: 20px; width: 36px; text-align: center; flex-shrink: 0; }
+.item-info { flex: 1; min-width: 0; }
+.item-name { font-size: 13px; font-weight: 600; }
+.item-desc { font-size: 11px; color: var(--text-dim); }
+.item-actions { display: flex; align-items: center; gap: 6px; flex-shrink: 0; }
+
+/* Toggle */
+.toggle-wrap { display: flex; align-items: center; gap: 4px; font-size: 10px; color: var(--text-dim); }
+.toggle-switch { position: relative; width: 40px; height: 22px; display: inline-block; }
+.toggle-switch input { opacity: 0; width: 0; height: 0; }
+.toggle-slider { position: absolute; inset: 0; border-radius: 22px; background: #444; cursor: pointer; transition: .3s; }
+.toggle-slider:before {
+  content: ''; position: absolute; width: 16px; height: 16px; left: 3px; top: 3px;
+  border-radius: 50%; background: #fff; transition: .3s;
+}
+input:checked + .toggle-slider { background: var(--accent); }
+input:checked + .toggle-slider:before { transform: translateX(18px); }
+
+/* Buttons */
+.btn-sm {
+  padding: 4px 10px; font-size: 11px; border-radius: 12px;
+  border: 1px solid var(--glass-border); background: var(--surface);
+  color: var(--text-dim); cursor: pointer; white-space: nowrap;
+}
+.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
+.btn-sm.primary { background: var(--accent); color: #fff; border-color: var(--accent); }
+.btn-sm.primary:hover { background: #6a4eec; }
+.btn-sm.danger { color: var(--danger); border-color: transparent; }
+.btn-sm.danger:hover { background: rgba(239,68,68,0.15); }
+.btn-sm.installed { color: var(--text-dim); cursor: default; border-color: transparent; }
+
+/* Status dot */
+.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
+.status-dot.connected { background: var(--success); box-shadow: 0 0 6px var(--success); }
+.status-dot.disconnected { background: var(--danger); }
+
+/* Market card */
+.market-card {
+  display: flex; align-items: center; gap: 10px; padding: 10px 12px; margin-bottom: 6px;
+  background: var(--surface); border-radius: var(--radius-sm);
+}
+.market-icon { font-size: 20px; width: 36px; text-align: center; flex-shrink: 0; }
+.market-info { flex: 1; min-width: 0; }
+.market-name { font-size: 13px; font-weight: 600; }
+.market-desc { font-size: 11px; color: var(--text-dim); }
+.market-meta { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
+.market-category {
+  display: inline-block; padding: 2px 8px; font-size: 10px; border-radius: 10px;
+  background: rgba(124,92,252,0.15); color: var(--accent);
+}
+.source-badge {
+  display: inline-block; padding: 1px 6px; font-size: 9px; border-radius: 8px;
+  background: rgba(34,197,94,0.15); color: var(--success);
+}
+.source-badge.builtin { background: rgba(124,92,252,0.15); color: var(--accent); }
+
+/* MCP tools */
+.mcp-tools-list { margin-top: 6px; margin-left: 12px; padding: 8px 12px; font-size: 11px; color: var(--text-dim); display: none; }
+.mcp-tools-list.open { display: block; }
+.mcp-tools-list ul { list-style: none; padding: 0; }
+.mcp-tools-list li { padding: 2px 0; }
+.mcp-tools-list .tname { color: var(--accent); }
+
+/* Add form */
+.add-form {
+  display: flex; flex-direction: column; gap: 8px; padding: 12px;
+  background: var(--surface); border-radius: var(--radius-sm); margin: 8px 0;
+}
+.add-form input, .add-form select {
+  padding: 8px 10px; font-size: 13px; background: var(--bg); border: 1px solid var(--glass-border);
+  border-radius: 8px; color: var(--text); outline: none;
+}
+.add-form input:focus, .add-form select:focus { border-color: var(--accent); }
+.form-row { display: flex; gap: 8px; }
+
+/* Upload */
 .upload-zone {
-  border: 2px dashed var(--glass-border);
-  border-radius: var(--radius-sm);
-  padding: 20px;
-  text-align: center;
-  cursor: pointer;
-  transition: var(--transition);
-  margin-bottom: 16px;
+  border: 2px dashed var(--glass-border); border-radius: var(--radius);
+  padding: 20px; text-align: center; cursor: pointer; margin-bottom: 12px;
 }
-.upload-zone:hover, .upload-zone.drag-over {
-  border-color: var(--accent);
-  background: rgba(124,92,252,0.08);
-}
-.upload-zone .icon { font-size: 28px; margin-bottom: 8px; }
+.upload-zone:hover, .upload-zone.drag-over { border-color: var(--accent); background: rgba(124,92,252,0.06); }
+.upload-zone .icon { font-size: 24px; margin-bottom: 6px; opacity: 0.6; }
 .upload-zone p { font-size: 12px; color: var(--text-dim); }
+.upload-zone span { font-size: 10px; color: var(--text-dim); opacity: 0.6; }
 
 /* Doc list */
 .doc-list { display: flex; flex-direction: column; gap: 6px; }
 .doc-item {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 12px; border-radius: var(--radius-sm);
-  background: var(--surface); transition: var(--transition);
+  padding: 8px 12px; background: var(--surface); border-radius: var(--radius-sm);
 }
-.doc-item:hover { background: rgba(255,255,255,0.08); }
 .doc-info { flex: 1; min-width: 0; }
-.doc-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.doc-meta { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.doc-del {
-  padding: 4px 8px; border: none; background: none; color: var(--danger);
-  cursor: pointer; font-size: 16px; opacity: 0.5; transition: var(--transition);
-  border-radius: 6px;
-}
-.doc-del:hover { opacity: 1; background: rgba(239,68,68,0.1); }
+.doc-name { font-size: 13px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.doc-meta { font-size: 11px; color: var(--text-dim); }
+.doc-del { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px; opacity: 0.5; }
+.doc-del:hover { opacity: 1; background: rgba(239,68,68,0.1); border-radius: 4px; }
 
 /* Profile */
-.profile-form {
-  display: flex; gap: 8px; margin-bottom: 16px;
-}
+.profile-form { display: flex; gap: 8px; margin-bottom: 12px; }
 .profile-form input {
-  flex: 1; padding: 8px 12px; border-radius: 8px; border: 1px solid var(--glass-border);
-  background: var(--surface); color: var(--text); font-size: 13px; outline: none;
-  transition: var(--transition);
+  flex: 1; padding: 8px 10px; font-size: 13px; background: var(--surface);
+  border: 1px solid var(--glass-border); border-radius: 8px; color: var(--text); outline: none;
 }
 .profile-form input:focus { border-color: var(--accent); }
 .profile-form button {
-  padding: 8px 14px; border: none; background: var(--accent); color: #fff;
-  border-radius: 8px; cursor: pointer; font-size: 13px; font-weight: 600;
-  transition: var(--transition);
+  padding: 8px 14px; background: var(--accent); color: #fff; border: none; border-radius: 8px; cursor: pointer;
 }
-.profile-form button:hover { background: #6d4de0; }
 .profile-list { display: flex; flex-direction: column; gap: 4px; }
 .profile-item {
   display: flex; align-items: center; justify-content: space-between;
-  padding: 8px 12px; border-radius: 8px; background: var(--surface);
+  padding: 8px 12px; background: var(--surface); border-radius: var(--radius-sm);
 }
-.profile-item .key { font-weight: 600; font-size: 13px; color: var(--accent); }
-.profile-item .val { font-size: 13px; color: var(--text-dim); }
-.profile-item button {
-  padding: 2px 8px; border: none; background: none; color: var(--danger);
-  cursor: pointer; opacity: 0.5; font-size: 14px; transition: var(--transition);
-}
+.profile-item .key { font-size: 13px; font-weight: 600; color: var(--accent); }
+.profile-item .val { font-size: 13px; color: var(--text-dim); margin-left: 8px; flex: 1; }
+.profile-item button { background: none; border: none; color: var(--danger); cursor: pointer; font-size: 14px; opacity: 0.5; }
 .profile-item button:hover { opacity: 1; }
 
-/* Session list */
-.session-list { display: flex; flex-direction: column; gap: 4px; }
-.session-item {
-  display: flex; align-items: center; justify-content: space-between;
-  padding: 10px 12px; border-radius: var(--radius-sm);
-  background: var(--surface); transition: var(--transition);
-  cursor: pointer;
+/* Source item */
+.source-item {
+  display: flex; align-items: center; justify-content: space-between; gap: 8px;
+  padding: 6px 10px; background: var(--surface); border-radius: 8px; margin-bottom: 4px; font-size: 12px;
 }
-.session-item:hover { background: rgba(255,255,255,0.08); }
-.session-item.active { background: rgba(124,92,252,0.15); border: 1px solid rgba(124,92,252,0.3); }
-.session-info { flex: 1; min-width: 0; }
-.session-name { font-size: 13px; font-weight: 500; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
-.session-meta { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.session-actions { display: flex; gap: 2px; margin-left: 8px; }
-.session-actions button {
-  padding: 2px 6px; border: none; background: none; cursor: pointer;
-  font-size: 12px; opacity: 0.4; transition: var(--transition); border-radius: 4px;
-  color: var(--text-dim);
-}
-.session-actions button:hover { opacity: 1; }
-.session-actions .sess-rename:hover { color: var(--accent); background: rgba(124,92,252,0.15); }
-.session-actions .sess-del:hover { color: var(--danger); background: rgba(239,68,68,0.1); }
-.session-new-btn {
-  width: 100%; padding: 10px; border: 1px dashed var(--glass-border);
-  background: none; color: var(--text-dim); cursor: pointer;
-  border-radius: var(--radius-sm); font-size: 13px; transition: var(--transition);
-  margin-top: 8px;
-}
-.session-new-btn:hover { border-color: var(--accent); color: var(--accent); background: rgba(124,92,252,0.06); }
-
-/* Skill/MCP cards */
-.skill-item, .mcp-item, .market-card {
-  display: flex; align-items: center; gap: 10px;
-  padding: 12px; border-radius: var(--radius-sm);
-  background: var(--surface); transition: var(--transition);
-  margin-bottom: 6px;
-}
-.skill-item:hover, .mcp-item:hover, .market-card:hover { background: rgba(255,255,255,0.08); }
-.skill-icon, .mcp-icon, .market-icon { font-size: 24px; flex-shrink: 0; width: 40px; text-align: center; }
-.skill-info, .mcp-info, .market-info { flex: 1; min-width: 0; }
-.skill-name, .mcp-name, .market-name { font-size: 13px; font-weight: 600; }
-.skill-desc, .mcp-desc, .market-desc { font-size: 11px; color: var(--text-dim); margin-top: 2px; }
-.skill-meta, .mcp-meta, .market-meta { font-size: 10px; color: var(--text-dim); margin-top: 2px; }
-.toggle-switch {
-  position: relative; width: 40px; height: 22px; flex-shrink: 0;
-  cursor: pointer;
-}
-.toggle-switch input { opacity: 0; width: 0; height: 0; }
-.toggle-slider {
-  position: absolute; inset: 0; border-radius: 22px;
-  background: rgba(255,255,255,0.15); transition: var(--transition);
-}
-.toggle-slider:before {
-  content: ''; position: absolute; width: 16px; height: 16px;
-  border-radius: 50%; left: 3px; top: 3px;
-  background: #fff; transition: var(--transition);
-}
-.toggle-switch input:checked + .toggle-slider { background: var(--accent); }
-.toggle-switch input:checked + .toggle-slider:before { transform: translateX(18px); }
-.status-dot { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0; }
-.status-dot.connected { background: var(--success); box-shadow: 0 0 6px rgba(34,197,94,0.4); }
-.status-dot.disconnected { background: var(--danger); }
-.btn-sm {
-  padding: 4px 10px; border: 1px solid var(--glass-border); border-radius: 6px;
-  background: var(--surface); color: var(--text); cursor: pointer; font-size: 11px;
-  transition: var(--transition);
-}
-.btn-sm:hover { border-color: var(--accent); color: var(--accent); }
-.btn-sm.primary { background: var(--accent); border-color: var(--accent); color: #fff; }
-.btn-sm.primary:hover { background: #6d4de0; }
-.btn-sm.installed { color: var(--text-dim); border-color: transparent; cursor: default; }
-.market-category {
-  display: inline-block; padding: 1px 8px; border-radius: 10px;
-  font-size: 10px; background: rgba(124,92,252,0.15);
-  color: var(--accent); margin-right: 4px;
-}
-.mcp-tools-list { margin-top: 8px; padding-left: 12px; font-size: 11px; color: var(--text-dim); }
-.mcp-tools-list li { margin-bottom: 3px; }
-.add-server-form {
-  display: flex; flex-direction: column; gap: 8px; margin-bottom: 12px;
-  padding: 12px; border-radius: var(--radius-sm); background: var(--surface);
-}
-.add-server-form input, .add-server-form select {
-  padding: 8px; border-radius: 6px; border: 1px solid var(--glass-border);
-  background: var(--surface); color: var(--text); font-size: 12px; outline: none;
-}
-.add-server-form input:focus, .add-server-form select:focus { border-color: var(--accent); }
-.add-server-form label { font-size: 11px; color: var(--text-dim); }
-.form-row { display: flex; gap: 8px; }
-.form-row input { flex: 1; }
-
-/* Main chat */
-.main {
-  flex: 1; display: flex; flex-direction: column;
-  height: 100vh; z-index: 1;
-}
-.chat-header {
-  padding: 20px 28px; border-bottom: 1px solid var(--glass-border);
-  background: var(--glass); backdrop-filter: blur(20px);
-  display: flex; align-items: center; justify-content: space-between;
-}
-.chat-header h2 { font-size: 16px; font-weight: 600; }
-.chat-header button {
-  padding: 6px 14px; background: var(--surface); border: 1px solid var(--glass-border);
-  color: var(--text-dim); border-radius: 8px; cursor: pointer; font-size: 12px;
-  transition: var(--transition);
-}
-.chat-header button:hover { color: var(--text); border-color: rgba(255,255,255,0.2); }
-
-.messages {
-  flex: 1; overflow-y: auto; padding: 24px 28px;
-  display: flex; flex-direction: column; gap: 20px;
-}
-.messages::-webkit-scrollbar { width: 4px; }
-.messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.1); border-radius: 4px; }
-
-.message { display: flex; gap: 12px; animation: msgIn 0.3s ease; }
-@keyframes msgIn { from { opacity: 0; transform: translateY(8px); } to { opacity: 1; transform: translateY(0); } }
-.message.user { flex-direction: row-reverse; }
-.message .avatar {
-  width: 34px; height: 34px; border-radius: 50%; display: flex;
-  align-items: center; justify-content: center; font-size: 16px;
-  flex-shrink: 0;
-}
-.message.assistant .avatar { background: rgba(124,92,252,0.2); }
-.message.user .avatar { background: rgba(91,141,239,0.2); }
-.message .bubble {
-  max-width: 72%; padding: 14px 18px; border-radius: var(--radius);
-  font-size: 14px; line-height: 1.65; word-break: break-word;
-}
-.message.user .bubble {
-  background: var(--user-bubble); color: #fff;
-  border-bottom-right-radius: 4px;
-}
-.message.assistant .bubble {
-  background: var(--assistant-bubble); color: #e0e0e0;
-  border: 1px solid var(--glass-border);
-  border-bottom-left-radius: 4px;
-}
-.message.assistant .bubble p { margin: 0 0 8px; }
-.message.assistant .bubble p:last-child { margin: 0; }
-.message.assistant .bubble code {
-  background: rgba(0,0,0,0.3); padding: 2px 6px; border-radius: 4px;
-  font-size: 13px; font-family: 'JetBrains Mono', 'Fira Code', monospace;
-}
-.message.assistant .bubble pre {
-  background: rgba(0,0,0,0.4); padding: 12px 16px; border-radius: 8px;
-  overflow-x: auto; margin: 8px 0;
-}
-.message.assistant .bubble pre code { background: none; padding: 0; }
-.message.assistant .bubble .source {
-  display: inline-block; margin-top: 8px; font-size: 11px;
-  color: var(--accent); background: rgba(124,92,252,0.15);
-  padding: 2px 10px; border-radius: 12px;
-}
-
-/* Typing indicator */
-.typing .bubble::after {
-  content: '▊'; animation: blink 1s infinite;
-}
-@keyframes blink { 0%,100%{opacity:1} 50%{opacity:0} }
-
-.empty-chat {
-  flex: 1; display: flex; align-items: center; justify-content: center;
-  flex-direction: column; gap: 12px; color: var(--text-dim);
-}
-.empty-chat .icon { font-size: 48px; opacity: 0.3; }
-.empty-chat p { font-size: 15px; }
-
-/* Input area */
-.input-area {
-  padding: 20px 28px 24px; border-top: 1px solid var(--glass-border);
-  background: var(--glass); backdrop-filter: blur(20px);
-}
-.input-wrap {
-  display: flex; gap: 10px; align-items: flex-end;
-}
-.input-wrap textarea {
-  flex: 1; resize: none; padding: 12px 18px; border-radius: 24px;
-  border: 1px solid var(--glass-border); background: var(--surface);
-  color: var(--text); font-size: 14px; font-family: inherit;
-  outline: none; min-height: 44px; max-height: 120px;
-  transition: var(--transition); line-height: 1.5;
-}
-.input-wrap textarea:focus {
-  border-color: var(--accent);
-  box-shadow: 0 0 0 3px var(--accent-glow);
-}
-.input-wrap textarea::placeholder { color: var(--text-dim); }
-.input-wrap button {
-  width: 44px; height: 44px; border-radius: 50%; border: none;
-  background: var(--accent); color: #fff; cursor: pointer;
-  font-size: 18px; flex-shrink: 0; transition: var(--transition);
-  display: flex; align-items: center; justify-content: center;
-}
-.input-wrap button:hover { background: #6d4de0; transform: scale(1.05); }
-.input-wrap button:disabled { opacity: 0.4; cursor: not-allowed; transform: none; }
+.source-item .source-url { flex: 1; color: var(--text-dim); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; font-size: 11px; }
 
 /* Toast */
 .toast {
-  position: fixed; top: 20px; right: 20px; padding: 12px 20px;
-  border-radius: 10px; font-size: 13px; font-weight: 500;
-  z-index: 100; animation: toastIn 0.3s ease;
-  backdrop-filter: blur(12px);
+  position: fixed; top: 20px; right: 20px; z-index: 9999;
+  padding: 10px 18px; border-radius: var(--radius-sm); font-size: 13px;
+  backdrop-filter: blur(12px); border: 1px solid; animation: toastIn .3s ease;
 }
-.toast.success { background: rgba(34,197,94,0.2); color: var(--success); border: 1px solid rgba(34,197,94,0.3); }
-.toast.error { background: rgba(239,68,68,0.2); color: var(--danger); border: 1px solid rgba(239,68,68,0.3); }
-@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: translateX(0); } }
+@keyframes toastIn { from { opacity: 0; transform: translateX(20px); } to { opacity: 1; transform: none; } }
+.toast.success { background: rgba(34,197,94,0.15); color: var(--success); border-color: rgba(34,197,94,0.3); }
+.toast.error { background: rgba(239,68,68,0.15); color: var(--danger); border-color: rgba(239,68,68,0.3); }
 
-/* Responsive */
-@media (max-width: 768px) {
-  .sidebar { display: none; }
-  .message .bubble { max-width: 85%; }
-}
+@media (max-width: 768px) { .sidebar { display: none; } .settings-panel { width: 100vw; } .message .bubble { max-width: 85%; } }
 </style>
 </head>
 <body>
 
-<!-- Sidebar -->
+<!-- ═══════════════ SIDEBAR ═══════════════ -->
 <aside class="sidebar">
-  <div class="sidebar-header">
-    <h1>Assistant</h1>
-    <p>智能知识库助手</p>
-  </div>
-  <div class="sidebar-tabs">
-    <button data-tab="sessions" class="active">会话</button>
-    <button data-tab="skills">技能</button>
-    <button data-tab="skill-market">技能市场</button>
-    <button data-tab="mcp">MCP</button>
-    <button data-tab="mcp-market">MCP市场</button>
-    <button data-tab="kb">知识库</button>
-    <button data-tab="profile">画像</button>
-  </div>
+  <div class="sidebar-header"><h1>Assistant</h1><p>智能知识库助手</p></div>
   <div class="sidebar-content">
-    <div class="tab-panel active" id="tab-sessions">
-      <div class="session-list" id="sessionList">
-        <p style="font-size:12px;color:var(--text-dim);text-align:center">加载中...</p>
-      </div>
-      <button class="session-new-btn" onclick="createSession()">+ 新建会话</button>
-    </div>
-    <!-- Skills Panel -->
-    <div class="tab-panel" id="tab-skills">
-      <div id="skillList">
-        <p style="font-size:12px;color:var(--text-dim);text-align:center">加载中...</p>
-      </div>
-      <button class="session-new-btn" onclick="switchTab('skill-market')">🛒 技能市场</button>
-    </div>
-    <!-- Skill Market Panel -->
-    <div class="tab-panel" id="tab-skill-market">
-      <div id="skillMarketList">
-        <p style="font-size:12px;color:var(--text-dim);text-align:center">加载中...</p>
-      </div>
-    </div>
-    <!-- MCP Panel -->
-    <div class="tab-panel" id="tab-mcp">
-      <div id="mcpServerList">
-        <p style="font-size:12px;color:var(--text-dim);text-align:center">加载中...</p>
-      </div>
-      <div class="add-server-form" id="mcpAddForm" style="display:none">
-        <label>名称</label>
-        <input id="mcpName" placeholder="服务器名称">
-        <label>传输方式</label>
-        <select id="mcpTransport" onchange="toggleMcpFields()">
-          <option value="stdio">stdio (本地进程)</option>
-          <option value="http">HTTP (远程)</option>
-        </select>
-        <div id="mcpStdioFields">
-          <label>命令</label>
-          <input id="mcpCommand" placeholder="如: npx">
-          <label>参数 (JSON数组)</label>
-          <input id="mcpArgs" placeholder='如: ["-y", "server-name"]'>
-        </div>
-        <div id="mcpHttpFields" style="display:none">
-          <label>URL</label>
-          <input id="mcpUrl" placeholder="https://...">
-          <label>Headers (JSON)</label>
-          <input id="mcpHeaders" placeholder='{"Authorization":"Bearer ..."}'>
-        </div>
-        <div style="display:flex;gap:8px">
-          <button class="btn-sm primary" onclick="addMcpServer()">添加</button>
-          <button class="btn-sm" onclick="document.getElementById('mcpAddForm').style.display='none'">取消</button>
-        </div>
-      </div>
-      <div style="display:flex;gap:6px;margin-top:8px">
-        <button class="session-new-btn" style="flex:1" onclick="document.getElementById('mcpAddForm').style.display='block'">+ 手动添加</button>
-        <button class="session-new-btn" style="flex:1" onclick="switchTab('mcp-market')">🛒 MCP市场</button>
-      </div>
-    </div>
-    <!-- MCP Market Panel -->
-    <div class="tab-panel" id="tab-mcp-market">
-      <div id="mcpMarketList">
-        <p style="font-size:12px;color:var(--text-dim);text-align:center">加载中...</p>
-      </div>
-    </div>
-    <div class="tab-panel" id="tab-kb">
-      <div class="upload-zone" id="uploadZone">
-        <div class="icon">📁</div>
-        <p>点击或拖拽上传文档</p>
-        <p style="font-size:11px;margin-top:4px">支持 TXT / MD / PDF</p>
-      </div>
-      <input type="file" id="fileInput" style="display:none" accept=".txt,.md,.pdf" multiple>
-      <div class="doc-list" id="docList">
-        <p style="font-size:12px;color:var(--text-dim);text-align:center">加载中...</p>
-      </div>
-    </div>
-    <div class="tab-panel" id="tab-profile">
-      <div class="profile-form">
-        <input type="text" id="pfKey" placeholder="属性名">
-        <input type="text" id="pfVal" placeholder="属性值">
-        <button onclick="addProfile()">+</button>
-      </div>
-      <div class="profile-list" id="profileList">
-        <p style="font-size:12px;color:var(--text-dim);text-align:center">加载中...</p>
-      </div>
-    </div>
+    <div class="session-list" id="sessionList"></div>
+    <button class="new-btn" onclick="createSession()">+ 新建会话</button>
   </div>
 </aside>
 
-<!-- Main Chat -->
+<!-- ═══════════════ MAIN CHAT ═══════════════ -->
 <main class="main">
   <div class="chat-header">
-    <h2 id="chatTitle">💬 对话</h2>
-    <button onclick="newChat()">清空消息</button>
+    <h2 id="chatTitle">对话</h2>
+    <button class="header-btn settings-btn" onclick="toggleSettings()">⚙ 设置</button>
+    <button class="header-btn" onclick="newChat()">清空消息</button>
   </div>
   <div class="messages" id="messages">
     <div class="empty-chat" id="emptyState">
@@ -491,259 +370,171 @@ body::before {
       <p>开始一段对话吧</p>
     </div>
   </div>
+  <div class="trigger-bar" id="triggerBar"></div>
   <div class="input-area">
     <div class="input-wrap">
-      <textarea id="userInput" placeholder="输入消息..." rows="1" onkeydown="handleKey(event)"></textarea>
+      <textarea id="userInput" placeholder="输入消息... (使用 /技能名 触发技能)" rows="1" onkeydown="handleKey(event)"></textarea>
       <button id="sendBtn" onclick="sendMessage()">➤</button>
     </div>
   </div>
 </main>
 
+<!-- ═══════════════ SETTINGS OVERLAY ═══════════════ -->
+<div class="settings-overlay" id="settingsOverlay">
+  <div class="settings-backdrop" onclick="toggleSettings()"></div>
+  <div class="settings-panel">
+    <div class="settings-panel-header">
+      <h2>设置</h2>
+      <button onclick="toggleSettings()">✕</button>
+    </div>
+    <div class="settings-subnav" id="settingsSubnav">
+      <button class="active" data-section="skills-section">技能</button>
+      <button data-section="mcp-section">MCP</button>
+      <button data-section="kb-section">知识库</button>
+      <button data-section="profile-section">画像</button>
+    </div>
+    <div class="settings-body">
+      <!-- 技能 -->
+      <div class="settings-section active" id="skills-section">
+        <div class="section-header">已安装的技能</div>
+        <div id="skillList" style="display:flex;flex-direction:column;gap:4px;margin-bottom:12px;"></div>
+
+        <div class="section-header" style="margin-top:12px;">技能市场</div>
+        <div id="skillMarketArea"></div>
+
+        <div class="section-header" style="margin-top:12px;">第三方来源</div>
+        <div id="skillSourcesList"></div>
+        <button class="new-btn" onclick="showAddSourceForm('skill')">+ 添加第三方来源</button>
+        <div class="add-form" id="skillSourceForm" style="display:none;">
+          <input id="skillSourceName" placeholder="来源名称 (如: 我的技能库)">
+          <input id="skillSourceUrl" placeholder="URL (返回JSON数组)">
+          <div class="form-row">
+            <button class="btn-sm primary" onclick="addMarketSource('skill')">添加</button>
+            <button class="btn-sm" onclick="hideAddSourceForm('skill')">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- MCP -->
+      <div class="settings-section" id="mcp-section">
+        <div class="section-header">MCP 服务器</div>
+        <div id="mcpServerList" style="display:flex;flex-direction:column;gap:6px;margin-bottom:12px;"></div>
+        <button class="new-btn" onclick="toggleMcpForm()">+ 手动添加</button>
+        <div class="add-form" id="mcpAddForm" style="display:none;">
+          <input id="mcpName" placeholder="服务器名称">
+          <select id="mcpTransport" onchange="toggleMcpFields()">
+            <option value="stdio">stdio (本地进程)</option>
+            <option value="http">HTTP (远程)</option>
+          </select>
+          <div id="stdioFields">
+            <input id="mcpCommand" placeholder="命令 (如 npx / python)">
+            <input id="mcpArgs" placeholder='参数 JSON 数组 (如 ["-y", "server-name"])'>
+          </div>
+          <div id="httpFields" style="display:none;">
+            <input id="mcpUrl" placeholder="URL (如 https://example.com/mcp)">
+            <input id="mcpHeaders" placeholder='Headers JSON (如 {"Authorization":"Bearer ..."})'>
+          </div>
+          <input id="mcpEnv" placeholder='环境变量 JSON (如 {"KEY":"value"})'>
+          <div class="form-row">
+            <button class="btn-sm primary" onclick="addMcpServer()">添加</button>
+            <button class="btn-sm" onclick="toggleMcpForm()">取消</button>
+          </div>
+        </div>
+
+        <div class="section-header" style="margin-top:12px;">MCP 市场</div>
+        <div id="mcpMarketArea"></div>
+
+        <div class="section-header" style="margin-top:12px;">第三方来源</div>
+        <div id="mcpSourcesList"></div>
+        <button class="new-btn" onclick="showAddSourceForm('mcp')">+ 添加第三方来源</button>
+        <div class="add-form" id="mcpSourceForm" style="display:none;">
+          <input id="mcpSourceName" placeholder="来源名称 (如: 我的MCP库)">
+          <input id="mcpSourceUrl" placeholder="URL (返回JSON数组)">
+          <div class="form-row">
+            <button class="btn-sm primary" onclick="addMarketSource('mcp')">添加</button>
+            <button class="btn-sm" onclick="hideAddSourceForm('mcp')">取消</button>
+          </div>
+        </div>
+      </div>
+
+      <!-- 知识库 -->
+      <div class="settings-section" id="kb-section">
+        <div class="section-header">知识库文档</div>
+        <div class="upload-zone" id="uploadZone">
+          <div class="icon">📁</div><p>点击或拖拽上传文档</p><span>支持 TXT / MD / PDF</span>
+        </div>
+        <input type="file" id="fileInput" accept=".txt,.md,.pdf,.csv,.json,.xml,.html" style="display:none;" multiple>
+        <div class="doc-list" id="docList"></div>
+      </div>
+
+      <!-- 画像 -->
+      <div class="settings-section" id="profile-section">
+        <div class="section-header">用户画像</div>
+        <div class="profile-form">
+          <input id="pfKey" placeholder="键 (如: 职业)">
+          <input id="pfVal" placeholder="值 (如: 软件工程师)">
+          <button onclick="addProfile()">+</button>
+        </div>
+        <div class="profile-list" id="profileList"></div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <script>
-// --- State ---
+// ═══════════════ STATE ═══════════════
 let isStreaming = false;
 let currentSessionId = null;
+let activeTriggeredSkills = [];
+let settingsInitialized = false;
 
-// --- Init ---
+// ═══════════════ INIT ═══════════════
 document.addEventListener('DOMContentLoaded', () => {
   loadSessions();
-  loadSkills();
-  loadSkillMarket();
-  loadMcpServers();
-  loadMcpMarket();
-  loadDocs();
-  loadProfile();
-  setupTabs();
+  setupSettingsSubnav();
   setupUpload();
   autoResize();
 });
 
-// --- Tabs ---
-function setupTabs() {
-  document.querySelectorAll('.sidebar-tabs button').forEach(btn => {
+// ═══════════════ SETTINGS PANEL ═══════════════
+function toggleSettings() {
+  const overlay = document.getElementById('settingsOverlay');
+  const isOpen = overlay.classList.contains('open');
+  if (isOpen) {
+    overlay.classList.remove('open');
+  } else {
+    overlay.classList.add('open');
+    if (!settingsInitialized) {
+      loadAllSettings();
+      settingsInitialized = true;
+    }
+  }
+}
+
+function loadAllSettings() {
+  loadSkills();
+  loadMcpServers();
+  loadDocs();
+  loadProfile();
+  loadSkillMarket();
+  loadMcpMarket();
+  loadSkillSources();
+  loadMcpSources();
+}
+
+function setupSettingsSubnav() {
+  document.querySelectorAll('#settingsSubnav button').forEach(btn => {
     btn.addEventListener('click', () => {
-      document.querySelectorAll('.sidebar-tabs button').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+      document.querySelectorAll('#settingsSubnav button').forEach(b => b.classList.remove('active'));
+      document.querySelectorAll('.settings-section').forEach(s => s.classList.remove('active'));
       btn.classList.add('active');
-      document.getElementById('tab-' + btn.dataset.tab).classList.add('active');
+      document.getElementById(btn.dataset.section).classList.add('active');
     });
   });
 }
 
-// --- Upload ---
-function setupUpload() {
-  const zone = document.getElementById('uploadZone');
-  const input = document.getElementById('fileInput');
-
-  zone.addEventListener('click', () => input.click());
-  input.addEventListener('change', () => uploadFiles(input.files));
-
-  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
-  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
-  zone.addEventListener('drop', e => {
-    e.preventDefault();
-    zone.classList.remove('drag-over');
-    uploadFiles(e.dataTransfer.files);
-  });
-}
-
-async function uploadFiles(files) {
-  for (const f of files) {
-    const form = new FormData();
-    form.append('file', f);
-    try {
-      const res = await fetch('/api/kb/upload', { method: 'POST', body: form });
-      const data = await res.json();
-      if (data.ok) toast(`已导入: ${data.filename}`, 'success');
-      else toast(`导入失败: ${data.filename}`, 'error');
-    } catch (e) {
-      toast(`上传失败: ${f.name}`, 'error');
-    }
-  }
-  loadDocs();
-}
-
-// --- Documents ---
-async function loadDocs() {
-  const list = document.getElementById('docList');
-  try {
-    const res = await fetch('/api/kb/list');
-    const docs = await res.json();
-    if (!docs.length) {
-      list.innerHTML = '<p style="font-size:12px;color:var(--text-dim);text-align:center">知识库为空</p>';
-      return;
-    }
-    list.innerHTML = docs.map(d => `
-      <div class="doc-item">
-        <div class="doc-info">
-          <div class="doc-name">${esc(d.filename)}</div>
-          <div class="doc-meta">${d.chunk_count} chunks &middot; ${d.created_at?.slice(0,10)}</div>
-        </div>
-        <button class="doc-del" title="删除" onclick="delDoc(${d.id})">✕</button>
-      </div>
-    `).join('');
-  } catch (e) {
-    list.innerHTML = '<p style="font-size:12px;color:var(--danger);text-align:center">加载失败</p>';
-  }
-}
-
-async function delDoc(id) {
-  if (!confirm('确认删除此文档？')) return;
-  await fetch('/api/kb/' + id, { method: 'DELETE' });
-  loadDocs();
-}
-
-// --- Profile ---
-async function loadProfile() {
-  const list = document.getElementById('profileList');
-  try {
-    const res = await fetch('/api/profile');
-    const pf = await res.json();
-    const keys = Object.keys(pf);
-    if (!keys.length) {
-      list.innerHTML = '<p style="font-size:12px;color:var(--text-dim);text-align:center">暂无画像</p>';
-      return;
-    }
-    list.innerHTML = keys.map(k => `
-      <div class="profile-item">
-        <span class="key">${esc(k)}</span>
-        <span class="val">${esc(pf[k])}</span>
-        <button onclick="delProfile('${esc(k)}')">✕</button>
-      </div>
-    `).join('');
-  } catch (e) {
-    list.innerHTML = '<p style="font-size:12px;color:var(--danger);text-align:center">加载失败</p>';
-  }
-}
-
-async function addProfile() {
-  const key = document.getElementById('pfKey').value.trim();
-  const value = document.getElementById('pfVal').value.trim();
-  if (!key || !value) return;
-  await fetch('/api/profile', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/json' },
-    body: JSON.stringify({ key, value })
-  });
-  document.getElementById('pfKey').value = '';
-  document.getElementById('pfVal').value = '';
-  loadProfile();
-}
-
-async function delProfile(key) {
-  await fetch('/api/profile/' + encodeURIComponent(key), { method: 'DELETE' });
-  loadProfile();
-}
-
-// --- Chat ---
-function newChat() {
-  document.getElementById('messages').innerHTML = `
-    <div class="empty-chat" id="emptyState">
-      <div class="icon">✨</div>
-      <p>开始一段对话吧</p>
-    </div>`;
-}
-
-// --- Sessions ---
-async function loadSessions() {
-  const list = document.getElementById('sessionList');
-  try {
-    const res = await fetch('/api/session/list');
-    const sessions = await res.json();
-    if (!sessions.length) {
-      // Create default session
-      const s = await fetch('/api/session/new?title=默认会话', { method: 'POST' });
-      const def = await s.json();
-      currentSessionId = def.id;
-      renderSessions([def]);
-      return;
-    }
-    // Auto-select first session if none selected
-    if (!currentSessionId) {
-      currentSessionId = sessions[0].id;
-    }
-    renderSessions(sessions);
-  } catch (e) {
-    list.innerHTML = '<p style="font-size:12px;color:var(--danger);text-align:center">加载失败</p>';
-  }
-}
-
-function renderSessions(sessions) {
-  const list = document.getElementById('sessionList');
-  list.innerHTML = sessions.map(s => `
-    <div class="session-item${s.id === currentSessionId ? ' active' : ''}" onclick="switchSession(${s.id})">
-      <div class="session-info">
-        <div class="session-name">${esc(s.title)}</div>
-        <div class="session-meta">${s.updated_at?.slice(0,16) || ''}</div>
-      </div>
-      <div class="session-actions">
-        <button class="sess-rename" title="重命名" onclick="event.stopPropagation();renameSession(${s.id})">✎</button>
-        <button class="sess-del" title="删除" onclick="event.stopPropagation();deleteSession(${s.id})">✕</button>
-      </div>
-    </div>
-  `).join('');
-}
-
-async function createSession() {
-  const title = prompt('输入会话标题:') || '新会话';
-  try {
-    const res = await fetch('/api/session/new?title=' + encodeURIComponent(title), { method: 'POST' });
-    const s = await res.json();
-    currentSessionId = s.id;
-    await loadSessions();
-    newChat();
-    document.getElementById('chatTitle').textContent = '💬 ' + s.title;
-    toast('已创建: ' + s.title, 'success');
-  } catch (e) {
-    toast('创建失败', 'error');
-  }
-}
-
-async function switchSession(id) {
-  if (id === currentSessionId) return;
-  currentSessionId = id;
-  await loadSessions();
-  newChat();
-  // Update chat header
-  const res = await fetch('/api/session/list');
-  const sessions = await res.json();
-  const s = sessions.find(x => x.id === id);
-  if (s) document.getElementById('chatTitle').textContent = '💬 ' + s.title;
-}
-
-async function renameSession(id) {
-  const title = prompt('新的会话标题:');
-  if (!title) return;
-  await fetch('/api/session/' + id + '/rename?title=' + encodeURIComponent(title), { method: 'PUT' });
-  loadSessions();
-}
-
-async function deleteSession(id) {
-  if (!confirm('确认删除此会话？相关记忆将被保留。')) return;
-  await fetch('/api/session/' + id, { method: 'DELETE' });
-  // If we deleted the current session, reload
-  if (currentSessionId === id) {
-    currentSessionId = null;
-  }
-  loadSessions();
-  // Reload to get new default if needed
-  setTimeout(async () => {
-    const res = await fetch('/api/session/list');
-    const sessions = await res.json();
-    if (sessions.length && !currentSessionId) {
-      currentSessionId = sessions[0].id;
-      newChat();
-    }
-    renderSessions(sessions);
-  }, 100);
-}
-
-function handleKey(e) {
-  if (e.key === 'Enter' && !e.shiftKey) {
-    e.preventDefault();
-    sendMessage();
-  }
-}
+// ═══════════════ CHAT ═══════════════
+function handleKey(e) { if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); sendMessage(); } }
 
 function autoResize() {
   const ta = document.getElementById('userInput');
@@ -753,374 +544,553 @@ function autoResize() {
   });
 }
 
-async function sendMessage() {
+function sendMessage() {
   if (isStreaming) return;
-  const input = document.getElementById('userInput');
-  const msg = input.value.trim();
+  const ta = document.getElementById('userInput');
+  const msg = ta.value.trim();
   if (!msg) return;
 
   isStreaming = true;
-  input.value = '';
-  input.style.height = 'auto';
+  ta.value = '';
+  ta.style.height = 'auto';
   document.getElementById('sendBtn').disabled = true;
 
   removeEmptyState();
   addMessage('user', msg);
-  const assistantMsg = addMessage('assistant', '', true);
 
-  try {
-    const res = await fetch('/api/chat', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify({ message: msg, session_id: currentSessionId })
-    });
+  const assistantEl = addMessage('assistant', '', true);
+  const bubble = assistantEl.querySelector('.bubble');
 
-    const reader = res.body.getReader();
-    const decoder = new TextDecoder();
-    let buffer = '';
+  const body = JSON.stringify({
+    message: msg,
+    session_id: currentSessionId,
+    triggered_skills: activeTriggeredSkills.length > 0 ? activeTriggeredSkills : null
+  });
 
-    while (true) {
-      const { done, value } = await reader.read();
-      if (done) break;
-      buffer += decoder.decode(value, { stream: true });
+  activeTriggeredSkills = [];
+  renderTriggerBar();
 
-      const lines = buffer.split('\n');
-      buffer = lines.pop() || '';
+  fetch('/api/chat', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body })
+    .then(res => {
+      if (!res.ok) throw new Error('HTTP ' + res.status);
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let fullText = '';
 
-      for (const line of lines) {
-        if (!line.startsWith('data: ')) continue;
-        const payload = line.slice(6);
-        if (payload === '[DONE]') continue;
-        try {
-          const data = JSON.parse(payload);
-          if (data.error) {
-            assistantMsg.querySelector('.bubble').textContent = 'Error: ' + data.error;
-          } else if (data.token) {
-            assistantMsg.querySelector('.bubble').innerHTML += data.token
-              .replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+      function pump() {
+        reader.read().then(({ done, value }) => {
+          if (done) {
+            assistantEl.classList.remove('typing');
+            if (fullText) renderMarkdownIn(bubble, fullText);
+            scrollDown(); isStreaming = false;
+            document.getElementById('sendBtn').disabled = false; ta.focus();
+            return;
           }
-        } catch (e) {}
+          const chunk = decoder.decode(value, { stream: true });
+          for (const line of chunk.split('\n')) {
+            if (!line.startsWith('data: ')) continue;
+            const data = line.slice(6).trim();
+            if (data === '[DONE]') {
+              assistantEl.classList.remove('typing');
+              renderMarkdownIn(bubble, fullText);
+              scrollDown(); isStreaming = false;
+              document.getElementById('sendBtn').disabled = false; ta.focus();
+              return;
+            }
+            try {
+              const j = JSON.parse(data);
+              if (j.error) { bubble.textContent = '错误: ' + j.error; assistantEl.classList.remove('typing'); }
+              else if (j.token) { fullText += j.token; bubble.textContent = fullText; scrollDown(); }
+            } catch (_) {}
+          }
+          pump();
+        }).catch(err => {
+          bubble.textContent = '读取响应失败: ' + err;
+          assistantEl.classList.remove('typing'); isStreaming = false;
+          document.getElementById('sendBtn').disabled = false;
+        });
       }
-    }
-  } catch (e) {
-    assistantMsg.querySelector('.bubble').textContent = '连接错误: ' + e.message;
-  }
-
-  assistantMsg.classList.remove('typing');
-  assistantMsg.querySelector('.bubble').innerHTML = renderMarkdown(
-    assistantMsg.querySelector('.bubble').innerHTML
-  );
-  scrollDown();
-  isStreaming = false;
-  document.getElementById('sendBtn').disabled = false;
-  input.focus();
+      pump();
+    })
+    .catch(err => {
+      bubble.textContent = '请求失败: ' + err;
+      assistantEl.classList.remove('typing'); isStreaming = false;
+      document.getElementById('sendBtn').disabled = false;
+    });
 }
 
 function addMessage(role, content, typing) {
-  const container = document.getElementById('messages');
   const div = document.createElement('div');
   div.className = 'message ' + role + (typing ? ' typing' : '');
-  div.innerHTML = `
-    <div class="avatar">${role === 'user' ? '👤' : '🤖'}</div>
-    <div class="bubble">${esc(content)}</div>
-  `;
-  container.appendChild(div);
+  div.innerHTML = '<div class="avatar">' + (role === 'user' ? '👤' : '🤖') + '</div>' +
+    '<div class="bubble">' + esc(content || '') + '</div>';
+  document.getElementById('messages').appendChild(div);
   scrollDown();
   return div;
 }
 
-function removeEmptyState() {
-  const es = document.getElementById('emptyState');
-  if (es) es.remove();
-}
+function removeEmptyState() { const el = document.getElementById('emptyState'); if (el) el.remove(); }
+function newChat() { document.getElementById('messages').innerHTML = '<div class="empty-chat" id="emptyState"><div class="icon">✨</div><p>开始一段对话吧</p></div>'; }
+function scrollDown() { const m = document.getElementById('messages'); m.scrollTop = m.scrollHeight; }
 
-function scrollDown() {
-  const msgs = document.getElementById('messages');
-  msgs.scrollTop = msgs.scrollHeight;
-}
-
-// --- Skills ---
+// ═══════════════ SKILLS ═══════════════
 async function loadSkills() {
-  const list = document.getElementById('skillList');
   try {
     const res = await fetch('/api/skill/list');
     const skills = await res.json();
+    const container = document.getElementById('skillList');
     if (!skills.length) {
-      list.innerHTML = '<p style="font-size:12px;color:var(--text-dim);text-align:center">暂无技能</p>';
+      container.innerHTML = '<div style="font-size:13px;color:var(--text-dim);padding:12px;">暂无已安装的技能</div>';
       return;
     }
-    list.innerHTML = skills.map(s => `
-      <div class="skill-item">
-        <div class="skill-icon">${s.icon || '⚡'}</div>
-        <div class="skill-info">
-          <div class="skill-name">${esc(s.display_name)}</div>
-          <div class="skill-desc">${esc(s.description)}</div>
+    container.innerHTML = skills.map(s => `
+      <div class="item-card">
+        <div class="item-icon">${esc(s.icon)}</div>
+        <div class="item-info">
+          <div class="item-name">${esc(s.display_name)}</div>
+          <div class="item-desc">${esc(s.description)}</div>
+          ${s.trigger_keywords && s.trigger_keywords.length ? `<div class="item-desc">触发词: ${esc(s.trigger_keywords.join(', '))}</div>` : ''}
         </div>
-        <label class="toggle-switch" onclick="event.stopPropagation()">
-          <input type="checkbox" ${s.enabled ? 'checked' : ''} onchange="toggleSkill('${esc(s.name)}', this.checked)">
-          <span class="toggle-slider"></span>
-        </label>
-      </div>
-    `).join('');
-  } catch (e) {
-    list.innerHTML = '<p style="font-size:12px;color:var(--danger);text-align:center">加载失败</p>';
-  }
+        <div class="item-actions">
+          <label class="toggle-wrap" title="自动触发"><span>自动</span>
+            <span class="toggle-switch">
+              <input type="checkbox" ${s.auto_trigger ? 'checked' : ''} onchange="toggleSkillAutoTrigger('${esc(s.name)}', this.checked)">
+              <span class="toggle-slider"></span>
+            </span>
+          </label>
+          <button class="btn-sm primary" onclick="triggerSkill('${esc(s.name)}')">触发</button>
+          <button class="btn-sm danger" onclick="removeSkill('${esc(s.name)}')">✕</button>
+        </div>
+      </div>`).join('');
+  } catch (_) {}
 }
 
-async function toggleSkill(name, enabled) {
-  const url = '/api/skill/' + encodeURIComponent(name) + '/' + (enabled ? 'enable' : 'disable');
-  await fetch(url, { method: 'POST' });
+async function toggleSkillAutoTrigger(name, enabled) {
+  await fetch('/api/skill/' + encodeURIComponent(name) + '/auto-trigger', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ auto_trigger: enabled })
+  });
+  toast(enabled ? '自动触发已开启' : '自动触发已关闭', 'success');
   loadSkills();
 }
 
-// --- Skill Market ---
+function triggerSkill(name) {
+  if (activeTriggeredSkills.includes(name)) {
+    activeTriggeredSkills = activeTriggeredSkills.filter(s => s !== name);
+  } else {
+    activeTriggeredSkills.push(name);
+  }
+  renderTriggerBar();
+  document.getElementById('userInput').focus();
+}
+
+async function removeSkill(name) {
+  if (!confirm('确定要删除技能 "' + name + '" 吗？')) return;
+  await fetch('/api/skill/' + encodeURIComponent(name), { method: 'DELETE' });
+  toast('技能已删除', 'success');
+  loadSkills();
+}
+
+function renderTriggerBar() {
+  const bar = document.getElementById('triggerBar');
+  if (!activeTriggeredSkills.length) { bar.innerHTML = ''; return; }
+  bar.innerHTML = activeTriggeredSkills.map(s =>
+    `<span class="trigger-badge" onclick="triggerSkill('${esc(s)}')">⚡ ${esc(s)} <span class="remove">✕</span></span>`
+  ).join('');
+}
+
+// ── Skill Market ──
 async function loadSkillMarket() {
-  const list = document.getElementById('skillMarketList');
   try {
     const res = await fetch('/api/skill/market');
     const items = await res.json();
-    if (!items.length) {
-      list.innerHTML = '<p style="font-size:12px;color:var(--text-dim);text-align:center">市场暂无技能</p>';
-      return;
-    }
-    list.innerHTML = items.map(s => `
+    const area = document.getElementById('skillMarketArea');
+    area.innerHTML = items.map(item => `
       <div class="market-card">
-        <div class="market-icon">${s.icon || '⚡'}</div>
+        <div class="market-icon">${esc(item.icon)}</div>
         <div class="market-info">
-          <div class="market-name">${esc(s.display_name)} <span class="market-category">${esc(s.category||'其他')}</span></div>
-          <div class="market-desc">${esc(s.description)}</div>
-          <div class="market-meta">${esc(s.author||'')} &middot; v${esc(s.version||'1.0')} &middot; ${s.downloads||0} 次下载</div>
+          <div class="market-name">${esc(item.display_name)} ${item.category ? '<span class="market-category">'+esc(item.category)+'</span>' : ''} ${item.source ? '<span class="source-badge '+(item.source==='builtin'?'builtin':'')+'">'+esc(item._source||item.source)+'</span>' : ''}</div>
+          <div class="market-desc">${esc(item.description)}</div>
+          <div class="market-meta">${esc(item.author||'')} · v${esc(item.version||'1.0')} · ${(item.downloads||0)} 次下载</div>
         </div>
-        ${s.installed
-          ? '<button class="btn-sm installed" disabled>已安装</button>'
-          : '<button class="btn-sm primary" onclick="installSkill(\'' + esc(s.name) + '\')">安装</button>'}
-      </div>
-    `).join('');
-  } catch (e) {
-    list.innerHTML = '<p style="font-size:12px;color:var(--danger);text-align:center">加载失败</p>';
-  }
+        ${item.installed
+          ? '<button class="btn-sm installed">已安装</button>'
+          : '<button class="btn-sm primary" onclick="installSkill(\'' + esc(item.name) + '\')">安装</button>'}
+      </div>`).join('');
+  } catch (_) {}
 }
 
 async function installSkill(name) {
   const res = await fetch('/api/skill/market/' + encodeURIComponent(name) + '/install', { method: 'POST' });
   const data = await res.json();
-  if (data.ok) {
-    toast('技能已安装', 'success');
-    loadSkills();
-    loadSkillMarket();
-  } else {
-    toast('安装失败', 'error');
-  }
+  if (data.ok) { toast('技能已安装', 'success'); loadSkills(); loadSkillMarket(); }
+  else toast('安装失败', 'error');
 }
 
-// --- MCP Servers ---
+// ── Skill Sources ──
+async function loadSkillSources() { loadMarketSources('skill', 'skillSourcesList'); }
+async function loadMcpSources() { loadMarketSources('mcp', 'mcpSourcesList'); }
+
+async function loadMarketSources(type, containerId) {
+  try {
+    const res = await fetch('/api/' + type + '/market/sources');
+    const sources = await res.json();
+    const container = document.getElementById(containerId);
+    if (!sources.length) { container.innerHTML = '<div style="font-size:12px;color:var(--text-dim);padding:6px 0;">暂无第三方来源</div>'; return; }
+    container.innerHTML = sources.map(s => `
+      <div class="source-item">
+        <span>${esc(s.name)}</span>
+        <span class="source-url" title="${esc(s.url)}">${esc(s.url)}</span>
+        <label class="toggle-wrap"><span class="toggle-switch">
+          <input type="checkbox" ${s.enabled?'checked':''} onchange="toggleMarketSource('${type}', ${s.id}, this.checked)">
+          <span class="toggle-slider" style="width:32px;height:18px;"></span>
+        </span></label>
+        <button class="btn-sm danger" onclick="delMarketSource('${type}', ${s.id})">✕</button>
+      </div>`).join('');
+  } catch (_) {}
+}
+
+function showAddSourceForm(type) {
+  document.getElementById(type + 'SourceForm').style.display = '';
+}
+
+function hideAddSourceForm(type) {
+  document.getElementById(type + 'SourceForm').style.display = 'none';
+}
+
+async function addMarketSource(type) {
+  const name = document.getElementById(type + 'SourceName').value.trim();
+  const url = document.getElementById(type + 'SourceUrl').value.trim();
+  if (!name || !url) { toast('名称和URL不能为空', 'error'); return; }
+  const res = await fetch('/api/' + type + '/market/sources', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ name, url })
+  });
+  const data = await res.json();
+  if (data.ok) {
+    toast('来源已添加', 'success');
+    hideAddSourceForm(type);
+    if (type === 'skill') { loadSkillSources(); loadSkillMarket(); }
+    else { loadMcpSources(); loadMcpMarket(); }
+  } else toast('添加失败: ' + (data.error||''), 'error');
+}
+
+async function toggleMarketSource(type, id, enabled) {
+  await fetch('/api/' + type + '/market/sources/' + id, {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ enabled })
+  });
+  if (type === 'skill') loadSkillMarket();
+  else loadMcpMarket();
+}
+
+async function delMarketSource(type, id) {
+  if (!confirm('确定要删除该来源吗？')) return;
+  await fetch('/api/' + type + '/market/sources/' + id, { method: 'DELETE' });
+  toast('来源已删除', 'success');
+  if (type === 'skill') { loadSkillSources(); loadSkillMarket(); }
+  else { loadMcpSources(); loadMcpMarket(); }
+}
+
+// ═══════════════ MCP ═══════════════
 async function loadMcpServers() {
-  const list = document.getElementById('mcpServerList');
   try {
     const res = await fetch('/api/mcp/servers');
     const servers = await res.json();
+    const container = document.getElementById('mcpServerList');
     if (!servers.length) {
-      list.innerHTML = '<p style="font-size:12px;color:var(--text-dim);text-align:center">暂无MCP服务器</p>';
+      container.innerHTML = '<div style="font-size:13px;color:var(--text-dim);padding:12px;">暂无 MCP 服务器</div>';
       return;
     }
-    list.innerHTML = servers.map(s => `
-      <div class="mcp-item" style="flex-direction:column;align-items:stretch;cursor:pointer" onclick="toggleMcpTools(this, ${s.id})">
-        <div style="display:flex;align-items:center;gap:10px">
-          <span class="status-dot ${s.status==='connected'?'connected':'disconnected'}"></span>
-          <div class="mcp-info" style="flex:1">
-            <div class="mcp-name">${esc(s.name)} <span style="font-size:10px;color:var(--text-dim)">${s.transport}</span></div>
-            <div class="mcp-desc">${s.status==='connected' ? s.tool_count + ' 个工具可用' : '未连接'}</div>
-          </div>
-          <div style="display:flex;gap:4px" onclick="event.stopPropagation()">
-            ${s.status==='connected'
-              ? '<button class="btn-sm" onclick="reconnectMcp('+s.id+')">重连</button>'
-              : '<button class="btn-sm primary" onclick="reconnectMcp('+s.id+')">连接</button>'}
-            <button class="btn-sm" onclick="delMcpServer('+s.id+')" style="color:var(--danger)">✕</button>
-          </div>
+    container.innerHTML = servers.map(s => `
+      <div class="item-card" style="flex-wrap:wrap;">
+        <span class="status-dot ${s.status==='connected'?'connected':'disconnected'}"></span>
+        <div class="item-info" style="cursor:pointer;" onclick="toggleMcpTools(this.parentElement, ${s.id})">
+          <div class="item-name">${esc(s.name)}</div>
+          <div class="item-desc">${esc(s.transport)} · ${s.tool_count||0} 个工具</div>
         </div>
-        <div class="mcp-tools-list" style="display:none" id="mcpTools-${s.id}"></div>
-      </div>
-    `).join('');
-  } catch (e) {
-    list.innerHTML = '<p style="font-size:12px;color:var(--danger);text-align:center">加载失败</p>';
-  }
+        <div class="item-actions">
+          <label class="toggle-wrap" title="自动连接"><span>自动</span>
+            <span class="toggle-switch">
+              <input type="checkbox" ${s.auto_connect!==false?'checked':''} onchange="toggleMcpAutoConnect(${s.id}, this.checked)">
+              <span class="toggle-slider"></span>
+            </span>
+          </label>
+          <button class="btn-sm primary" onclick="reconnectMcp(${s.id})">${s.status==='connected'?'重连':'连接'}</button>
+          <button class="btn-sm danger" onclick="delMcpServer(${s.id})">✕</button>
+        </div>
+        <div class="mcp-tools-list" id="mcpTools-${s.id}"></div>
+      </div>`).join('');
+  } catch (_) {}
+}
+
+async function toggleMcpAutoConnect(id, enabled) {
+  await fetch('/api/mcp/servers/' + id + '/auto-connect', {
+    method: 'PUT', headers: { 'Content-Type': 'application/json' },
+    body: JSON.stringify({ auto_connect: enabled })
+  });
+  toast(enabled ? '自动连接已开启' : '自动连接已关闭', 'success');
+  loadMcpServers();
 }
 
 async function toggleMcpTools(el, serverId) {
   const toolsDiv = document.getElementById('mcpTools-' + serverId);
-  if (toolsDiv.style.display === 'block') {
-    toolsDiv.style.display = 'none';
-    return;
-  }
+  if (!toolsDiv) return;
+  if (toolsDiv.classList.contains('open')) { toolsDiv.classList.remove('open'); return; }
   try {
     const res = await fetch('/api/mcp/servers/' + serverId + '/tools');
     const tools = await res.json();
-    if (!tools.length) {
-      toolsDiv.innerHTML = '<p style="font-size:11px;color:var(--text-dim)">无工具</p>';
-    } else {
-      toolsDiv.innerHTML = '<ul>' + tools.map(t =>
-        '<li><strong>' + esc(t.name) + '</strong>: ' + esc(t.description) + '</li>'
-      ).join('') + '</ul>';
-    }
-    toolsDiv.style.display = 'block';
-  } catch (e) {
-    toolsDiv.innerHTML = '<p style="font-size:11px;color:var(--danger)">加载失败</p>';
-    toolsDiv.style.display = 'block';
-  }
+    toolsDiv.innerHTML = tools.length
+      ? '<ul>' + tools.map(t => '<li><span class="tname">' + esc(t.name) + '</span>: ' + esc(t.description||'') + '</li>').join('') + '</ul>'
+      : '<em>无工具</em>';
+    toolsDiv.classList.add('open');
+  } catch (_) { toolsDiv.innerHTML = '<em>加载失败</em>'; toolsDiv.classList.add('open'); }
+}
+
+function toggleMcpForm() {
+  const f = document.getElementById('mcpAddForm');
+  f.style.display = f.style.display === 'none' ? '' : 'none';
+}
+
+function toggleMcpFields() {
+  const transport = document.getElementById('mcpTransport').value;
+  document.getElementById('stdioFields').style.display = transport === 'stdio' ? '' : 'none';
+  document.getElementById('httpFields').style.display = transport === 'http' ? '' : 'none';
 }
 
 async function addMcpServer() {
   const name = document.getElementById('mcpName').value.trim();
+  if (!name) { toast('请输入服务器名称', 'error'); return; }
   const transport = document.getElementById('mcpTransport').value;
-  if (!name) { toast('请输入名称', 'error'); return; }
   const body = { name, transport };
   if (transport === 'stdio') {
     body.command = document.getElementById('mcpCommand').value.trim();
-    try { body.args = JSON.parse(document.getElementById('mcpArgs').value.trim() || '[]'); } catch(e) { body.args = []; }
+    try { body.args = JSON.parse(document.getElementById('mcpArgs').value.trim() || '[]'); } catch (_) { body.args = []; }
   } else {
     body.url = document.getElementById('mcpUrl').value.trim();
-    try { body.headers = JSON.parse(document.getElementById('mcpHeaders').value.trim() || '{}'); } catch(e) { body.headers = {}; }
+    try { body.headers = JSON.parse(document.getElementById('mcpHeaders').value.trim() || '{}'); } catch (_) { body.headers = {}; }
   }
-  const res = await fetch('/api/mcp/servers', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(body)
-  });
-  const data = await res.json();
-  if (data.ok) {
-    toast('MCP服务器已添加 (' + data.tools + ' 个工具)', 'success');
-    document.getElementById('mcpAddForm').style.display = 'none';
-    loadMcpServers();
-  } else {
-    toast('添加失败: ' + (data.error||''), 'error');
-  }
-}
+  try { body.env = JSON.parse(document.getElementById('mcpEnv').value.trim() || '{}'); } catch (_) { body.env = {}; }
 
-function toggleMcpFields() {
-  const t = document.getElementById('mcpTransport').value;
-  document.getElementById('mcpStdioFields').style.display = t === 'stdio' ? 'block' : 'none';
-  document.getElementById('mcpHttpFields').style.display = t !== 'stdio' ? 'block' : 'none';
+  const res = await fetch('/api/mcp/servers', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(body) });
+  const data = await res.json();
+  if (data.ok) { toast('服务器已添加，' + data.tools + ' 个工具', 'success'); toggleMcpForm(); loadMcpServers(); }
+  else toast('添加失败', 'error');
 }
 
 async function reconnectMcp(id) {
   const res = await fetch('/api/mcp/servers/' + id + '/reconnect', { method: 'POST' });
   const data = await res.json();
-  if (data.ok) toast('已连接 (' + data.count + ' 个工具)', 'success');
+  if (data.ok) toast('已连接，' + data.count + ' 个工具', 'success');
   else toast('连接失败', 'error');
   loadMcpServers();
 }
 
 async function delMcpServer(id) {
-  if (!confirm('确认删除此MCP服务器？')) return;
+  if (!confirm('确定要删除该 MCP 服务器吗？')) return;
   await fetch('/api/mcp/servers/' + id, { method: 'DELETE' });
+  toast('服务器已删除', 'success');
   loadMcpServers();
 }
 
-// --- MCP Market ---
+// ── MCP Market ──
 async function loadMcpMarket() {
-  const list = document.getElementById('mcpMarketList');
   try {
     const res = await fetch('/api/mcp/market');
     const items = await res.json();
-    if (!items.length) {
-      list.innerHTML = '<p style="font-size:12px;color:var(--text-dim);text-align:center">市场暂无MCP服务器</p>';
-      return;
-    }
-    list.innerHTML = items.map(s => `
-      <div class="market-card" style="flex-direction:column;align-items:stretch">
-        <div style="display:flex;align-items:center;gap:10px">
-          <div class="market-icon">${s.icon || '🔌'}</div>
-          <div class="market-info" style="flex:1">
-            <div class="market-name">${esc(s.display_name)} <span class="market-category">${esc(s.category||'其他')}</span> <span style="font-size:10px;color:var(--text-dim)">${s.transport}</span></div>
-            <div class="market-desc">${esc(s.description)}</div>
-            ${s.configHint ? '<div class="market-meta" style="color:var(--accent)">⚠ '+esc(s.configHint)+'</div>' : ''}
-          </div>
+    const area = document.getElementById('mcpMarketArea');
+    area.innerHTML = items.map(item => `
+      <div class="market-card">
+        <div class="market-icon">${esc(item.icon)}</div>
+        <div class="market-info">
+          <div class="market-name">${esc(item.display_name)} ${item.category ? '<span class="market-category">'+esc(item.category)+'</span>' : ''} ${item.source ? '<span class="source-badge '+(item.source==='builtin'?'builtin':'')+'">'+esc(item._source||item.source)+'</span>' : ''}</div>
+          <div class="market-desc">${esc(item.description)} · ${esc(item.transport||'')}</div>
+          ${item.configHint ? '<div class="market-desc" style="color:var(--danger);margin-top:2px;">' + esc(item.configHint) + '</div>' : ''}
         </div>
-        <div style="margin-top:8px;display:flex;justify-content:flex-end">
-          ${s.added
-            ? '<button class="btn-sm installed" disabled>已添加</button>'
-            : '<button class="btn-sm primary" onclick="addMcpFromMarket(\'' + esc(s.name) + '\')">添加到服务器</button>'}
-        </div>
-      </div>
-    `).join('');
-  } catch (e) {
-    list.innerHTML = '<p style="font-size:12px;color:var(--danger);text-align:center">加载失败</p>';
-  }
+        ${item.added
+          ? '<button class="btn-sm installed">已添加</button>'
+          : '<button class="btn-sm primary" onclick="addMcpFromMarket(\'' + esc(item.name) + '\')">添加</button>'}
+      </div>`).join('');
+  } catch (_) {}
 }
 
 async function addMcpFromMarket(name) {
   let config = {};
-  // Check if the item needs API keys or paths
-  const res = await fetch('/api/mcp/market');
-  const items = await res.json();
-  const item = items.find(i => i.name === name);
-  if (!item) return;
-  if (item.configHint) {
-    if (item.env && Object.keys(item.env).length) {
-      const envStr = prompt('配置环境变量 (JSON格式):', JSON.stringify(item.env, null, 2));
-      if (!envStr) return;
-      try { config.env = JSON.parse(envStr); } catch(e) { toast('JSON格式错误', 'error'); return; }
+  try {
+    const res = await fetch('/api/mcp/market');
+    const items = await res.json();
+    const item = items.find(i => i.name === name);
+    if (!item) { toast('未找到市场项目', 'error'); return; }
+    if (item.configHint || (item.env && JSON.stringify(item.env).includes('YOUR_'))) {
+      const envStr = prompt('环境变量 (JSON):', JSON.stringify(item.env||{}));
+      if (envStr !== null) { try { config.env = JSON.parse(envStr); } catch (_) { toast('JSON格式错误', 'error'); return; } }
     }
-    if (item.args && item.args.some(a => a.includes('/path/to'))) {
-      const argsStr = prompt('配置参数 (JSON数组):', JSON.stringify(item.args));
-      if (!argsStr) return;
-      try { config.args = JSON.parse(argsStr); } catch(e) { toast('JSON格式错误', 'error'); return; }
+    if (item.args && JSON.stringify(item.args).includes('/path/to')) {
+      const argsStr = prompt('参数 (JSON数组):', JSON.stringify(item.args||[]));
+      if (argsStr !== null) { try { config.args = JSON.parse(argsStr); } catch (_) { toast('JSON格式错误', 'error'); return; } }
     }
-    if (item.headers) {
-      const headersStr = prompt('配置Headers (JSON格式):', JSON.stringify(item.headers, null, 2));
-      if (!headersStr) return;
-      try { config.headers = JSON.parse(headersStr); } catch(e) { toast('JSON格式错误', 'error'); return; }
-    }
-  }
-  const resp = await fetch('/api/mcp/market/' + encodeURIComponent(name) + '/add', {
-    method: 'POST', headers: {'Content-Type':'application/json'}, body: JSON.stringify(config)
+  } catch (_) {}
+  const res = await fetch('/api/mcp/market/' + encodeURIComponent(name) + '/add', {
+    method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify(config)
   });
-  const data = await resp.json();
-  if (data.ok) {
-    toast('MCP服务器已添加 (' + data.tools + ' 个工具)', 'success');
-    loadMcpServers();
-    loadMcpMarket();
-  } else {
-    toast('添加失败: ' + (data.error||''), 'error');
+  const data = await res.json();
+  if (data.ok) { toast('已添加，' + data.tools + ' 个工具', 'success'); loadMcpServers(); loadMcpMarket(); }
+  else toast('添加失败', 'error');
+}
+
+// ═══════════════ SESSIONS ═══════════════
+async function loadSessions() {
+  try {
+    const res = await fetch('/api/session/list');
+    let sessions = await res.json();
+    if (!sessions.length) {
+      const r2 = await fetch('/api/session/new?title=' + encodeURIComponent('默认会话'));
+      sessions = [await r2.json()];
+    }
+    if (!currentSessionId) {
+      currentSessionId = sessions[0].id;
+      updateChatTitle(sessions[0].title);
+    }
+    renderSessions(sessions);
+  } catch (_) {}
+}
+
+function renderSessions(sessions) {
+  document.getElementById('sessionList').innerHTML = sessions.map(s => `
+    <div class="session-item${s.id === currentSessionId ? ' active' : ''}" onclick="switchSession(${s.id})">
+      <div class="session-info">
+        <div class="session-name">${esc(s.title)}</div>
+        <div class="session-meta">${(s.updated_at||s.created_at||'').slice(0,16)}</div>
+      </div>
+      <div class="session-actions">
+        <button onclick="event.stopPropagation();renameSession(${s.id})" title="重命名">✎</button>
+        <button onclick="event.stopPropagation();deleteSession(${s.id})" title="删除">✕</button>
+      </div>
+    </div>`).join('');
+}
+
+function updateChatTitle(title) { document.getElementById('chatTitle').textContent = '💬 ' + title; }
+
+async function createSession() {
+  const title = prompt('会话标题:', '新会话');
+  if (!title) return;
+  const res = await fetch('/api/session/new?title=' + encodeURIComponent(title));
+  const s = await res.json();
+  currentSessionId = s.id; updateChatTitle(s.title); newChat(); loadSessions();
+  toast('会话已创建', 'success');
+}
+
+async function switchSession(id) {
+  if (id === currentSessionId) return;
+  currentSessionId = id; newChat();
+  await loadSessions();
+  try {
+    const res = await fetch('/api/session/list');
+    const sessions = await res.json();
+    const s = sessions.find(s => s.id === id);
+    if (s) updateChatTitle(s.title);
+  } catch (_) {}
+}
+
+async function renameSession(id) {
+  const title = prompt('新标题:'); if (!title) return;
+  await fetch('/api/session/' + id + '/rename?title=' + encodeURIComponent(title), { method: 'PUT' });
+  loadSessions();
+}
+
+async function deleteSession(id) {
+  if (!confirm('确定要删除该会话吗？')) return;
+  await fetch('/api/session/' + id, { method: 'DELETE' });
+  if (currentSessionId === id) currentSessionId = null;
+  await loadSessions();
+  const res = await fetch('/api/session/list');
+  const sessions = await res.json();
+  if (sessions.length) { currentSessionId = sessions[0].id; updateChatTitle(sessions[0].title); }
+  else { const r2 = await fetch('/api/session/new?title=' + encodeURIComponent('默认会话')); const s = await r2.json(); currentSessionId = s.id; updateChatTitle(s.title); }
+  loadSessions(); newChat();
+}
+
+// ═══════════════ KB ═══════════════
+function setupUpload() {
+  const zone = document.getElementById('uploadZone');
+  const input = document.getElementById('fileInput');
+  zone.addEventListener('click', () => input.click());
+  input.addEventListener('change', () => uploadFiles(input.files));
+  zone.addEventListener('dragover', e => { e.preventDefault(); zone.classList.add('drag-over'); });
+  zone.addEventListener('dragleave', () => zone.classList.remove('drag-over'));
+  zone.addEventListener('drop', e => { e.preventDefault(); zone.classList.remove('drag-over'); uploadFiles(e.dataTransfer.files); });
+}
+
+async function uploadFiles(files) {
+  for (const f of files) {
+    const fd = new FormData(); fd.append('file', f);
+    const res = await fetch('/api/kb/upload', { method: 'POST', body: fd });
+    const data = await res.json();
+    toast(data.ok ? '已上传: ' + f.name : '上传失败: ' + f.name, data.ok ? 'success' : 'error');
   }
+  loadDocs();
 }
 
-function switchTab(name) {
-  document.querySelectorAll('.sidebar-tabs button').forEach(b => b.classList.remove('active'));
-  document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
-  const btn = document.querySelector('[data-tab="' + name + '"]');
-  if (btn) btn.classList.add('active');
-  const panel = document.getElementById('tab-' + name);
-  if (panel) panel.classList.add('active');
+async function loadDocs() {
+  try {
+    const res = await fetch('/api/kb/list');
+    const docs = await res.json();
+    const container = document.getElementById('docList');
+    if (!docs.length) { container.innerHTML = '<div style="font-size:13px;color:var(--text-dim);padding:12px;">知识库为空</div>'; return; }
+    container.innerHTML = docs.map(d => `
+      <div class="doc-item">
+        <div class="doc-info"><div class="doc-name">${esc(d.filename)}</div><div class="doc-meta">${d.chunk_count} 块 · ${(d.created_at||'').slice(0,16)}</div></div>
+        <button class="doc-del" onclick="delDoc(${d.id})">✕</button>
+      </div>`).join('');
+  } catch (_) {}
 }
 
-// --- Simple Markdown ---
-function renderMarkdown(text) {
-  // Bold
-  text = text.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
-  // Italic
-  text = text.replace(/\*(.+?)\*/g, '<em>$1</em>');
-  // Inline code
-  text = text.replace(/`([^`]+)`/g, '<code>$1</code>');
-  // Source tag
-  text = text.replace(/\[来源:\s*(.+?)\]/g, '<span class="source">📎 $1</span>');
-  // Handle newlines as <br> or <p>
-  // Split by double newline for paragraphs
-  let paras = text.split('\n\n');
-  text = paras.map(p => {
-    if (p.trim()) return '<p>' + p.replace(/\n/g, '<br>') + '</p>';
-    return '';
-  }).join('');
-  return text;
+async function delDoc(id) { if (!confirm('确定要删除该文档吗？')) return; await fetch('/api/kb/' + id, { method: 'DELETE' }); loadDocs(); }
+
+// ═══════════════ PROFILE ═══════════════
+async function loadProfile() {
+  try {
+    const res = await fetch('/api/profile');
+    const profile = await res.json();
+    const container = document.getElementById('profileList');
+    const entries = Object.entries(profile||{});
+    if (!entries.length) { container.innerHTML = '<div style="font-size:13px;color:var(--text-dim);padding:12px;">暂无画像</div>'; return; }
+    container.innerHTML = entries.map(([k, v]) => `
+      <div class="profile-item"><span class="key">${esc(k)}</span><span class="val">${esc(v)}</span><button onclick="delProfile('${esc(k)}')">✕</button></div>`).join('');
+  } catch (_) {}
 }
 
-// --- Utils ---
-function esc(s) { return String(s).replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;'); }
+async function addProfile() {
+  const key = document.getElementById('pfKey').value.trim();
+  const val = document.getElementById('pfVal').value.trim();
+  if (!key || !val) { toast('键和值不能为空', 'error'); return; }
+  await fetch('/api/profile', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ key, value: val }) });
+  document.getElementById('pfKey').value = document.getElementById('pfVal').value = '';
+  loadProfile();
+}
+
+async function delProfile(key) { await fetch('/api/profile/' + encodeURIComponent(key), { method: 'DELETE' }); loadProfile(); }
+
+// ═══════════════ UTILS ═══════════════
+function esc(s) { return String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
 
 function toast(msg, type) {
-  const t = document.createElement('div');
-  t.className = 'toast ' + (type || 'success');
-  t.textContent = msg;
-  document.body.appendChild(t);
-  setTimeout(() => t.remove(), 3000);
+  const el = document.createElement('div');
+  el.className = 'toast ' + (type || 'success');
+  el.textContent = msg;
+  document.body.appendChild(el);
+  setTimeout(() => el.remove(), 3000);
+}
+
+function renderMarkdownIn(bubble, text) {
+  let html = esc(text);
+  html = html.replace(/\*\*(.+?)\*\*/g, '<strong>$1</strong>');
+  html = html.replace(/\*(.+?)\*/g, '<em>$1</em>');
+  html = html.replace(/`([^`]+)`/g, '<code>$1</code>');
+  html = html.replace(/\[来源:\s*([^\]]+)\]/g, '<span class="source">$1</span>');
+  const parts = html.split(/\n\n+/);
+  html = parts.map(p => '<p>' + p.replace(/\n/g, '<br>') + '</p>').join('');
+  bubble.innerHTML = html;
 }
 </script>
 </body>

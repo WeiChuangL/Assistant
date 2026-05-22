@@ -24,31 +24,65 @@ def _init_skills():
     _skills_loaded = True
 
 
+def _strip_trigger_keywords(message: str, triggered: list[str]) -> str:
+    """Remove matched trigger keywords from the message."""
+    from src.skill.registry import skill_registry
+    result = message
+    for name in triggered:
+        skill = skill_registry.get(name)
+        if not skill:
+            continue
+        for kw in sorted(skill.trigger_keywords, key=len, reverse=True):
+            # Case-insensitive removal
+            idx = result.lower().find(kw.lower())
+            if idx >= 0:
+                result = result[:idx] + result[idx + len(kw):]
+                break
+    return result.strip()
+
+
 class Agent:
     def __init__(self, session_id: int | None = None):
         self.short_term = ShortTermMemory()
         self.session_id = session_id
-        # Ensure tools are imported and registered
         import src.agent.tools  # noqa: F401
         _init_skills()
 
-    async def chat_stream(self, user_input: str) -> AsyncIterator[str]:
-        """Process user input and stream the response."""
+    async def chat_stream(
+        self, user_input: str, triggered_skills: list[str] | None = None,
+    ) -> AsyncIterator[str]:
+        """Process user input and stream the response.
+
+        triggered_skills: explicit skill names to activate for this message
+        (from UI trigger button). If None, auto-detect from message content.
+        """
+        from src.skill.registry import skill_registry
+
+        # Detect triggered skills from message content
+        detected = skill_registry.find_triggered_skills(user_input)
+        if triggered_skills:
+            # Merge explicit triggers with detected
+            all_triggered = list(set(detected + triggered_skills))
+        else:
+            all_triggered = detected
+
+        # Strip trigger keywords from the message for cleaner LLM input
+        clean_input = _strip_trigger_keywords(user_input, all_triggered) if all_triggered else user_input
+
         # Step 1-2: Parallel retrieval + build context
-        chunks, memories, profile = await self._parallel_retrieve(user_input)
-        system_msg = self._build_system_prompt(chunks, memories, profile)
+        chunks, memories, profile = await self._parallel_retrieve(clean_input)
+        system_msg = self._build_system_prompt(chunks, memories, profile, all_triggered)
 
         # Step 3: ReAct loop with tools
         messages = [ChatMessage(role="system", content=system_msg)]
         for m in self.short_term.get_all():
             messages.append(ChatMessage(role=m["role"], content=m["content"]))
-        messages.append(ChatMessage(role="user", content=user_input))
+        messages.append(ChatMessage(role="user", content=clean_input))
 
         full_response = ""
         has_tools = bool(tool_registry)
 
         if has_tools:
-            # ReAct loop: LLM decides to call tools or answer directly
             for _ in range(MAX_REACT_LOOPS):
                 content, tool_calls = await llm_client.chat_with_tools(
                     messages=messages,
@@ -56,7 +90,6 @@ class Agent:
                 )
 
                 if tool_calls:
-                    # Add assistant's tool_calls message
                     messages.append(ChatMessage(
                         role="assistant",
                         content="",
@@ -72,7 +105,6 @@ class Agent:
                             for tc in tool_calls
                         ],
                     ))
-                    # Execute tools and add results
                     for tc in tool_calls:
                         try:
                             args = json.loads(tc["arguments"])
@@ -86,14 +118,12 @@ class Agent:
                         ))
                     continue
                 else:
-                    # LLM provided a final text response — yield it
                     final_content = content or ""
                     if final_content:
                         full_response = final_content
                         yield final_content
                     break
             else:
-                # Max loops reached — force a summary
                 messages.append(ChatMessage(
                     role="user",
                     content="请基于已获取的工具结果，用中文给出简洁的回答。"
@@ -105,7 +135,6 @@ class Agent:
                 full_response = final
                 yield final
         else:
-            # No tools — classic RAG streaming
             async for token in llm_client.chat_stream(messages=messages):
                 full_response += token
                 yield token
@@ -131,6 +160,7 @@ class Agent:
         chunks: list[RetrievalResult],
         memories: list[MemoryEntry],
         profile: dict[str, str],
+        triggered_skills: list[str] | None = None,
     ) -> str:
         profile_str = "\n".join(f"- {k}: {v}" for k, v in profile.items()) if profile else "暂无用户画像"
 
@@ -171,9 +201,11 @@ class Agent:
             if parts:
                 tools_section = "\n## 可用工具\n" + "\n".join(parts) + "\n在需要实时数据时主动调用工具。"
 
-        # Append enabled skill prompts
+        # Build skill prompt augmentation with conditional triggering
         from src.skill.registry import skill_registry
-        skill_prompt = skill_registry.get_prompt_augmentation()
+        skill_prompt = skill_registry.get_prompt_augmentation(
+            triggered_skills=triggered_skills
+        )
 
         return SYSTEM_PROMPT.format(
             user_profile=profile_str,
@@ -193,6 +225,3 @@ class Agent:
 
     def clear_memory(self):
         self.short_term.clear()
-
-
-
